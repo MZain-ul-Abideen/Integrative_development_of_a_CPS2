@@ -1,19 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LandingPage from '../views/LandingPage.vue'
+import DashBoard from '../views/dashboard-page.vue'
+import Manager from '../views/manager-page.vue'
+import Notifications from '../views/notifications-page.vue'
+import Settings from '../views/settings-page.vue'
+import Help from '../views/help-page.vue'
+import NotFound from '../views/404-page.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'landing-page',
-    component: LandingPage
+    redirect: '/dashboard' // Redirect root path to /dashboard
   },
-  // {
-  //   path: '/about',
-  //   name: 'about',
-  //   component: function () {
-  //     return import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  //   }
-  // }
+  {
+    path: '/dashboard',
+    name: 'DashBoard',
+    component: DashBoard
+  },
+  {
+    path: '/manager',
+    name: 'Manager',
+    component: Manager
+  },
+  {
+    path: '/notifications',
+    name: 'Notification',
+    component: Notifications
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings
+  },
+  {
+    path: '/help',
+    name: 'Help',
+    component: Help
+  },
+  {
+    path: '/:pathMatch(.*)*', // Catch-all for undefined paths
+    name: 'NotFound',
+    component: NotFound
+  }
 ]
 
 const router = createRouter({
