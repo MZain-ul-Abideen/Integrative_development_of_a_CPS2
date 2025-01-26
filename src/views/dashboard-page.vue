@@ -145,10 +145,10 @@ const weeklyWeather = [
             <div class="affect-mini-card-blue-2"></div>
             <div class="affect-mini-card-yellow"></div>
             <div class="d-flex justify-content-end p-4 info-icon">
-              <img :src="exclamation" title="Outside city temperature!">
+              <img :src="exclamation" title="Humidity Outside!">
             </div>
             <div class="weather-data">
-              <img :src="humidityimage" class="weather-img">
+              <img :src="humidityimage" class="humidity-img">
               <h3 class="mt-3">80%</h3>
               <p>The Due Point is 27° right now</p>
             </div>
