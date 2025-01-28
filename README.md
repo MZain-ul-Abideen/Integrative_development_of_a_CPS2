@@ -44,7 +44,7 @@ This repository is part of the **Integrative Development of CPS2** project. It i
    ```bash
    git clone https://gitlab.emse.fr/scrum/Ecole-des-mines.git
    ```
-   When you clone the repo it has all fron end back end and embeded part. Go to embedded part.
+   When you clone the repo it has all front end back end and embeded parts. Go to embedded part.
 5. Open the embedded part in VS Code and configure pyMakr.
 6. Upload the code to ESP32 using pyMakr.
 
