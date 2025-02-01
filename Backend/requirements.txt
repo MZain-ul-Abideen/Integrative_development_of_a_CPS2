@@ -1,0 +1,30 @@
+blinker==1.9.0
+click==8.1.8
+Flask==3.1.0
+itsdangerous==2.2.0
+Jinja2==3.1.5
+MarkupSafe==3.0.2
+Werkzeug==3.1.3
+# Flask and related dependencies
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+
+# Database dependencies
+pymysql==1.1.0  # MySQL driver for SQLAlchemy
+SQLAlchemy==2.0.20
+
+# Scheduler for periodic tasks
+APScheduler==3.10.1
+
+# Environment variables management
+python-dotenv==1.0.0
+
+# HTTP requests for API calls
+requests==2.31.0
+
+# Email notifications (optional, if you plan to send emails)
+Flask-Mail==0.9.1
+
+# Testing framework (optional, for unit tests)
+pytest==7.4.0
