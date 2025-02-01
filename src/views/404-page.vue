@@ -38,7 +38,7 @@ function handleMouseLeave(event) {
                     <h5>Page not found!</h5>
                     <p class="mb-4">Sorry we can't find the page you are looking for </p>
                     <div>
-                        <router-link to="/dashboard" class="button-1">Go to Home</router-link>
+                        <router-link to="/" class="button-1">Go to Home</router-link>
                     </div>
                 </div>
             </div>

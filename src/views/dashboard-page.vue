@@ -273,58 +273,6 @@ const weeklyWeather = [
   /* To contain the shadow within the card */
 }
 
-.affect-mini-card-blue-1 {
-  height: 200px;
-  width: 200px;
-  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
-  position: absolute;
-  bottom: 100px;
-  right: 100px;
-  z-index: -1;
-  opacity: 0.9;
-  /* Slightly higher transparency for feathered look */
-  pointer-events: none;
-  /* Prevent interaction */
-  filter: blur(100px);
-  /* Apply blur to create a feathered edge */
-  border-radius: 50%;
-}
-
-.affect-mini-card-blue-2 {
-  height: 100px;
-  width: 100px;
-  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
-  position: absolute;
-  bottom: 100px;
-  right: 300px;
-  z-index: -1;
-  opacity: 0.9;
-  /* Slightly higher transparency for feathered look */
-  pointer-events: none;
-  /* Prevent interaction */
-  filter: blur(70px);
-  /* Apply blur to create a feathered edge */
-  border-radius: 50%;
-}
-
-.affect-mini-card-yellow {
-
-  height: 100px;
-  width: 100px;
-  background: #FFC62D;
-  position: absolute;
-  top: 100px;
-  left: 100px;
-  z-index: -1;
-  opacity: 0.9;
-  /* Slightly higher transparency for feathered look */
-  pointer-events: none;
-  /* Prevent interaction */
-  filter: blur(75px);
-  /* Apply blur to create a feathered edge */
-  border-radius: 50%;
-}
-
 .info-icon img {
   cursor: pointer;
 }

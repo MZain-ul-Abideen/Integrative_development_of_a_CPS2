@@ -1,41 +1,35 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashBoard from '../views/dashboard-page.vue'
-import Manager from '../views/manager-page.vue'
+// import DashBoard from '../views/dashboard-page.vue'
+import Create from '../views/create-page.vue'
 import Notifications from '../views/notifications-page.vue'
-import Settings from '../views/settings-page.vue'
-import Help from '../views/help-page.vue'
+// import Help from '../views/help-page.vue'
 import NotFound from '../views/404-page.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard' // Redirect root path to /dashboard
+    redirect: '/create' // Redirect root path to /dashboard
   },
+  // {
+  //   path: '/dashboard',
+  //   name: 'DashBoard',
+  //   component: DashBoard
+  // },
   {
-    path: '/dashboard',
-    name: 'DashBoard',
-    component: DashBoard
-  },
-  {
-    path: '/manager',
-    name: 'Manager',
-    component: Manager
+    path: '/create',
+    name: 'Create',
+    component: Create
   },
   {
     path: '/notifications',
     name: 'Notification',
     component: Notifications
   },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: Settings
-  },
-  {
-    path: '/help',
-    name: 'Help',
-    component: Help
-  },
+  // {
+  //   path: '/help',
+  //   name: 'Help',
+  //   component: Help
+  // },
   {
     path: '/:pathMatch(.*)*', // Catch-all for undefined paths
     name: 'NotFound',
