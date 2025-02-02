@@ -1,7 +1,8 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.services.rule_engine import RuleEngine  # Use absolute import
-from app.services.api_client import fetch_sensor_data, fetch_weather_data
-
+from app.services.api_client import fetch_weather_data
+from datetime import datetime
+from .sensor_simulator import fetch_sensor_data
 # Create a scheduler instance
 scheduler = BackgroundScheduler()
 
