@@ -20,7 +20,7 @@ def fetch_weather_data():
     """
     try:
         response = requests.get('https://api.weatherapi.com/v1/current.json', params={
-            'key': 'your_weather_api_key',  # Replace with your actual API key
+            'key': 'f1213da1b6bd48c2a0a162437250102',  # Replace with your actual API key
             'q': 'auto:ip'  # Fetch weather for the current location
         })
         response.raise_for_status()  # Raise an error for bad status codes
