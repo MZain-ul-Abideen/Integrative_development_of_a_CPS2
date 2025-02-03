@@ -2,21 +2,20 @@
   <div v-if="isVisible" class="modal-overlay">
     <div class="modal-content-wrapper">
       <div class="modal-content-header">
-        <span v-if="!showAddTrigger">Choose a Trigger</span>
-        <span v-else>Create a new Trigger</span>
+        <span v-if="!showAddTrigger">Choose a Rule</span>
+        <span v-else>Create a new Rule</span>
         <button @click="closeModal" class="btn">
           <img :src="cross" />
         </button>
       </div>
       <div class="modal-content-div">
-        <span>{{ title }}</span>
-
-        <AddTrigger v-if="showAddTrigger" />
+        <span v-if="!showAddTrigger"> {{ title }}</span>
+        
+        <AddTrigger v-if="showAddTrigger" :selectedService="title" :selectedTrigger="selectedTrigger" />
 
         <div class="trigger-card-wrapper" v-if="!showAddTrigger">
           <a href="#" v-for="(trigger, index) in selectedTriggers" 
-             :key="index" class="trigger-card"
-             @click.prevent="selectTrigger(trigger.name)">
+             :key="index" class="trigger-card">
             <div class="trigger-card-header">
               <span>{{ trigger.name }}</span>
             </div>
@@ -65,6 +64,7 @@ const triggerOptions = {
 const isVisible = ref(false);
 const title = ref('');
 const showAddTrigger = ref(false);
+const selectedTrigger = ref('');
 const emit = defineEmits(['trigger-selected']);
 
 const selectedTriggers = computed(() => {
@@ -75,21 +75,22 @@ function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
   showAddTrigger.value = false;
+  selectedTrigger.value = '';
 }
 
 function closeModal() {
   isVisible.value = false;
   showAddTrigger.value = false;
+  selectedTrigger.value = '';
 }
 
 function selectTrigger(triggerName) {
-  emit('trigger-selected', { service: title.value, trigger: triggerName });
-  closeModal();
+  selectedTrigger.value = triggerName;
+  showAddTrigger.value = true;
 }
 
 defineExpose({ openModal });
 </script>
-
 
 <style scoped>
 .modal-overlay {
@@ -162,6 +163,8 @@ defineExpose({ openModal });
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  color: var(--ui-1);
+  text-decoration: none;
 }
 
 .trigger-card-add {

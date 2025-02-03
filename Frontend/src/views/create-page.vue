@@ -80,7 +80,7 @@ function handleActionSelection({ action }) {
 
                             <div v-if="selectedService && selectedTrigger" class="selected-servce">
                                 <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
-                                <span><span class="fw-bold">Trigger: </span>{{ selectedTrigger }}</span>
+                                <span><span class="fw-bold">Rule: </span>{{ selectedTrigger }}</span>
                             </div>
                         </div>
                         <div class="ifthan-cards-div" v-if="showCards1">
@@ -88,18 +88,18 @@ function handleActionSelection({ action }) {
                                 <img :src="weatherimage" class="weather-img">
                                 <span>Weather</span>
                             </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openModal('Building Automation', 'if')">
+                            <!-- <a href="#" class="ifthan-card" @click.prevent="openModal('Building Automation', 'if')">
                                 <img :src="buildingtemp" class="weather-img">
                                 <span>Building Automation</span>
-                            </a>
+                            </a> -->
                             <a href="#" class="ifthan-card" @click.prevent="openModal('Sensor Temperature', 'if')">
                                 <img :src="sensortemp" class="weather-img">
                                 <span>Temperature</span>
                             </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openModal('Email', 'if')">
+                            <!-- <a href="#" class="ifthan-card" @click.prevent="openModal('Email', 'if')">
                                 <img :src="email" class="weather-img">
                                 <span>Email</span>
-                            </a>
+                            </a> -->
                             <a href="#" class="ifthan-card" @click.prevent="openModal('Timer', 'if')">
                                 <img :src="timer" class="weather-img">
                                 <span>Timer</span>
@@ -133,30 +133,30 @@ function handleActionSelection({ action }) {
                             <hr>
                             <div class="selected-servce">
                                 <span><span class="fw-bold">Service: </span>Weather</span>
-                                <span><span class="fw-bold">Trigger: </span>Do this</span>
+                                <span><span class="fw-bold">Action: </span>Do this</span>
                             </div>
                         </div>
                         <div class="ifthan-cards-div" v-if="showCards2">
-                            <a href="#" class="ifthan-card" @click.prevent="openModal('Temperature', 'then')">
+                            <!-- <a href="#" class="ifthan-card" @click.prevent="openModal('Temperature', 'then')">
                                 <img :src="weatherimage" class="weather-img">
                                 <span>Weather</span>
-                            </a>
+                            </a> -->
                             <a href="#" class="ifthan-card" @click.prevent="openModal('Building Automation', 'then')">
                                 <img :src="buildingtemp" class="weather-img">
                                 <span>Building Automation</span>
                             </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openModal('Sensor Temperature', 'then')">
+                            <!-- <a href="#" class="ifthan-card" @click.prevent="openModal('Sensor Temperature', 'then')">
                                 <img :src="sensortemp" class="weather-img">
                                 <span>Temperature</span>
-                            </a>
+                            </a> -->
                             <a href="#" class="ifthan-card" @click.prevent="openModal('Email', 'then')">
                                 <img :src="email" class="weather-img">
                                 <span>Email</span>
                             </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openModal('Timer', 'then')">
+                            <!-- <a href="#" class="ifthan-card" @click.prevent="openModal('Timer', 'then')">
                                 <img :src="timer" class="weather-img">
                                 <span>Timer</span>
-                            </a>
+                            </a> -->
                         </div>
                     </div>
                 </div>
@@ -166,7 +166,6 @@ function handleActionSelection({ action }) {
 
     <ModalTrigger ref="modalTriggerRef" @trigger-selected="handleTriggerSelection" />
     <ModalAction ref="modalActionRef" @action-selected="handleActionSelection" />
-    <ModalAction ref="modalActionRef" />
 </template>
 
 

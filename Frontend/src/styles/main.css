@@ -12,8 +12,8 @@
   --ui-3: #646464;
 
   /* Semantic Colors */
-  --color-error: linear-gradient(0deg, #dc2222 0%, #761212 100%);
-  --color-success: linear-gradient(0deg, #22dc60 0%, #127633 100%);
+  --color-error: #dc2222;
+  --color-success: #127633;
 
   /* Background and Border Colors */
   --color-background: #191B1F;
@@ -161,6 +161,32 @@ p.body-3 {
   color: var(--ui-1);
 }
 
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Hide number input arrows for Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+
+.dropdown {
+  color: var(--ui-1);
+  /* Optionally, add padding, border, etc. */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Some browsers might also require styling on the option elements */
+.dropdown option {
+  background-color: var(--color-background-2);
+  color: var(--ui-1);
+}
 
 
 .main-wrapper {
