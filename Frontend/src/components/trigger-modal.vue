@@ -11,11 +11,23 @@
       <div class="modal-content-div">
         <span v-if="!showAddTrigger"> {{ title }}</span>
         
-        <AddTrigger v-if="showAddTrigger" :selectedService="title" :selectedTrigger="selectedTrigger" />
+        <!-- AddTrigger component -->
+        <AddTrigger 
+          v-if="showAddTrigger" 
+          :selectedService="title" 
+          @trigger-created="handleTriggerCreated"
+        />
 
+        <!-- Trigger cards -->
         <div class="trigger-card-wrapper" v-if="!showAddTrigger">
-          <a href="#" v-for="(trigger, index) in selectedTriggers" 
-             :key="index" class="trigger-card">
+          <!-- Display created rules -->
+          <a 
+            href="#" 
+            v-for="(trigger, index) in createdTriggers" 
+            :key="index" 
+            class="trigger-card"
+            @click.prevent="selectTrigger(trigger)"
+          >
             <div class="trigger-card-header">
               <span>{{ trigger.name }}</span>
             </div>
@@ -23,6 +35,24 @@
               <p>{{ trigger.description }}</p>
             </div>
           </a>
+
+          <!-- Display default trigger options -->
+          <a 
+            href="#" 
+            v-for="(trigger, index) in selectedTriggers" 
+            :key="index" 
+            class="trigger-card"
+            @click.prevent="selectTrigger(trigger)"
+          >
+            <div class="trigger-card-header">
+              <span>{{ trigger.name }}</span>
+            </div>
+            <div class="trigger-card-body">
+              <p>{{ trigger.description }}</p>
+            </div>
+          </a>
+
+          <!-- Add new rule button -->
           <button class="trigger-card trigger-card-add" @click="showAddTrigger = true">
             <img :src="add" />
           </button>
@@ -33,27 +63,20 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue';
+import { ref, computed } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
 import AddTrigger from '@/components/sub-components/addTrigger-component.vue';
 
+// Trigger options
 const triggerOptions = {
   "Temperature": [
     { name: "Threshold", description: "Trigger when temperature crosses a threshold" },
     { name: "Fluctuation", description: "Trigger when temperature fluctuates rapidly" }
   ],
-  "Building Automation": [
-    { name: "Motion Detected", description: "Trigger when motion is detected" },
-    { name: "Light On", description: "Trigger when a light turns on" }
-  ],
   "Sensor Temperature": [
     { name: "High Temp", description: "Trigger when sensor detects high temperature" },
     { name: "Low Temp", description: "Trigger when sensor detects low temperature" }
-  ],
-  "Email": [
-    { name: "Received", description: "Trigger when an email is received" },
-    { name: "Sent", description: "Trigger when an email is sent" }
   ],
   "Timer": [
     { name: "Countdown", description: "Trigger when a countdown reaches zero" },
@@ -61,34 +84,45 @@ const triggerOptions = {
   ]
 };
 
+// Refs
 const isVisible = ref(false);
 const title = ref('');
 const showAddTrigger = ref(false);
-const selectedTrigger = ref('');
-const emit = defineEmits(['trigger-selected']);
+const createdTriggers = ref([]); // Stores created rules
 
+// Computed
 const selectedTriggers = computed(() => {
   return triggerOptions[title.value] || [];
 });
 
+// Emits
+const emit = defineEmits(['trigger-selected']);
+
+// Methods
 function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
   showAddTrigger.value = false;
-  selectedTrigger.value = '';
 }
 
 function closeModal() {
   isVisible.value = false;
   showAddTrigger.value = false;
-  selectedTrigger.value = '';
 }
 
-function selectTrigger(triggerName) {
-  selectedTrigger.value = triggerName;
-  showAddTrigger.value = true;
+function selectTrigger(trigger) {
+  // Emit the selected trigger to the parent component
+  emit('trigger-selected', { service: title.value, trigger: trigger.name });
+  closeModal();
 }
 
+function handleTriggerCreated(newTrigger) {
+  // Append the new trigger to the createdTriggers list
+  createdTriggers.value.push(newTrigger);
+  showAddTrigger.value = false; // Hide the AddTrigger component
+}
+
+// Expose openModal to parent
 defineExpose({ openModal });
 </script>
 

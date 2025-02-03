@@ -9,14 +9,15 @@
         </button>
       </div>
       <div class="modal-content-div">
-        <span>{{ title }}</span>
+        <span v-if="!showAddAction">{{ title }}</span>
 
         <!-- Show AddAction component when showAddAction is true -->
-        <AddAction v-if="showAddAction" />
+        <AddAction v-if="showAddAction" :selectedService="title" @action-created="handleActionCreated" />
 
         <!-- Show dynamic action options based on the selected service -->
         <div class="action-card-wrapper" v-if="!showAddAction">
-          <div v-for="(action, index) in selectedActions" :key="index" class="action-card" @click="handleActionSelection(action)">
+          <!-- Display created actions -->
+          <div v-for="(action, index) in createdActions" :key="index" class="action-card" @click="selectAction(action)">
             <div class="action-card-header">
               <span>{{ action.name }}</span>
             </div>
@@ -24,6 +25,19 @@
               <p>{{ action.description }}</p>
             </div>
           </div>
+
+          <!-- Display default action options -->
+          <div v-for="(action, index) in selectedActions" :key="index" class="action-card"
+            @click="selectAction(action)">
+            <div class="action-card-header">
+              <span>{{ action.name }}</span>
+            </div>
+            <div class="action-card-body">
+              <p>{{ action.description }}</p>
+            </div>
+          </div>
+
+          <!-- Add new action button -->
           <button class="action-card action-card-add" @click="showAddAction = true">
             <img :src="add" />
           </button>
@@ -41,57 +55,57 @@ import AddAction from '@/components/sub-components/addAction-component.vue';
 
 // Service-specific action options
 const actionOptions = {
-  "Temperature": [
-    { name: "Set Threshold", description: "Set a threshold for temperature control" },
-    { name: "Adjust Heating", description: "Increase or decrease the heating" }
-  ],
   "Building Automation": [
     { name: "Turn On Lights", description: "Activate the lights in a room" },
     { name: "Lock Doors", description: "Secure the doors automatically" }
-  ],
-  "Sensor Temperature": [
-    { name: "Activate Cooling", description: "Turn on cooling system when temperature rises" },
-    { name: "Trigger Alarm", description: "Sound an alarm if temperature is critical" }
   ],
   "Email": [
     { name: "Send Email", description: "Send an automated email notification" },
     { name: "Mark as Read", description: "Mark incoming emails as read" }
   ],
-  "Timer": [
-    { name: "Start Countdown", description: "Start a countdown timer" },
-    { name: "Repeat Task", description: "Schedule a recurring task" }
-  ]
 };
 
+// Refs
 const isVisible = ref(false);
 const title = ref('');
 const showAddAction = ref(false);
+const createdActions = ref([]); // Stores created actions
 
-// Dynamically get the relevant actions based on the selected service
+// Computed
 const selectedActions = computed(() => {
   return actionOptions[title.value] || [];
 });
 
+// Emits
+const emit = defineEmits(['action-selected']);
+
+// Methods
 function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
-  showAddAction.value = false; // Reset to default state when opening
+  showAddAction.value = false;
 }
 
 function closeModal() {
   isVisible.value = false;
-  showAddAction.value = false; // Reset when closing
+  showAddAction.value = false;
 }
 
-function handleActionSelection(action) {
+function selectAction(action) {
   // Emit the selected action to the parent component
-  emit('action-selected', { action });
+  emit('action-selected', { service: title.value, action: action.name });
+  closeModal();
+}
+
+function handleActionCreated(newAction) {
+  // Append the new action to the createdActions list
+  createdActions.value.push(newAction);
+  showAddAction.value = false; // Hide the AddAction component
 }
 
 // Expose openModal to parent component
 defineExpose({ openModal });
 </script>
-
 
 <style scoped>
 .modal-overlay {

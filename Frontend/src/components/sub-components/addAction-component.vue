@@ -1,30 +1,35 @@
 <template>
-    <div class="add-action-wrapper">
-        <div class="add-action-div">
-            <form action="" class="mt-4">
-                <input type="text" class="text-feild" placeholder="Enter Action Name">
-                <textarea name="discription" id="discription" class="discription-feild" placeholder="Enter Action Discription"></textarea>
-                <button class="button-2 my-3">Add</button>
-            </form>
-        </div>
+    <div class="add-trigger-wrapper">
+      <!-- Conditional Rendering Based on Selected Service -->
+      <EmailAction v-if="selectedService === 'Email'" />
+      <AutomationAction v-if="selectedService === 'Building Automation'" />
     </div>
-</template>
-
-<script setup></script>
-
-<style scoped>
-.add-action-wrapper {
+  </template>
+  
+  <script setup>
+  import EmailAction from '@/components/sub-components/action-modal/Email/email-service.vue';
+  import AutomationAction from '@/components/sub-components/action-modal/Automation/automation-service.vue' ;
+  
+  // Define Props
+  const props = defineProps({
+    selectedService: {
+      type: String,
+      default: ''
+    },
+    selectedTrigger: {
+      type: String,
+      default: ''
+    }
+  });
+  </script>
+  
+  <style scoped>
+  .add-trigger-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100%;
-}
-.add-action-div {
-    display: flex;
-    flex-direction: column;
-    width: 50%;
-    justify-content: center;
-    align-items: center;
-}
-</style>
+    width: 100%;
+  }
+  </style>
