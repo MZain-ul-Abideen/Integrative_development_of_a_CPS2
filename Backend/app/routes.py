@@ -16,3 +16,17 @@ def create_rule():
     db.session.add(new_rule)
     db.session.commit()
     return jsonify({'message': 'Rule created successfully', 'id': new_rule.id}), 201
+
+@main_routes.route('/debug/sensor', methods=['GET'])
+def debug_sensor():
+    from app.services.sensor_simulator import fetch_sensor_data
+    from app.services.api_client import fetch_weather_data
+    
+    sensor_data = fetch_sensor_data()
+    weather_data = fetch_weather_data()
+    
+    return jsonify({
+        "sensor_data": sensor_data,
+        "weather_data": weather_data,
+        "combined": {**sensor_data, **weather_data}
+    })
