@@ -1,3 +1,4 @@
+
 <script setup>
 import { ref } from 'vue';
 import ModalTrigger from '@/components/trigger-modal.vue';
@@ -16,8 +17,13 @@ import timer from '@/assets/pictures/time.png';
 
 const showCards1 = ref(false);
 const showCards2 = ref(false);
-const modalTriggerRef = ref(null); // Ref for If This modal
-const modalActionRef = ref(null); // Ref for Then That modal
+const modalTriggerRef = ref(null);
+const modalActionRef = ref(null);
+
+// Selected service and trigger
+const selectedService = ref('');
+const selectedTrigger = ref('');
+const selectedAction = ref('');
 
 function toggleIfCards() {
     showCards1.value = !showCards1.value;
@@ -34,14 +40,24 @@ function openModal(title, type) {
         modalActionRef.value?.openModal(title);
     }
 }
+
+// Handle event from modal
+function handleTriggerSelection({ service, trigger }) {
+    selectedService.value = service;
+    selectedTrigger.value = trigger;
+}
+
+function handleActionSelection({ action }) {
+    selectedAction.value = action;
+}
 </script>
+
 <template>
     <div class="main-wrapper">
         <div class="main-div-card">
             <div class="content">
                 <h5 class="mb-4">Create</h5>
                 <div class="ifthan-wrapper">
-                    <!-- If This Section -->
                     <div class="ifthan-div">
                         <div class="ifthan-header">
                             <div class="ifthan-header-card">
@@ -61,9 +77,10 @@ function openModal(title, type) {
                                 </div>
                             </div>
                             <hr>
-                            <div class="selected-servce">
-                                <span><span class="fw-bold">Service: </span>Weather</span>
-                                <span><span class="fw-bold">Trigger: </span>Do this</span>
+
+                            <div v-if="selectedService && selectedTrigger" class="selected-servce">
+                                <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
+                                <span><span class="fw-bold">Trigger: </span>{{ selectedTrigger }}</span>
                             </div>
                         </div>
                         <div class="ifthan-cards-div" v-if="showCards1">
@@ -147,9 +164,11 @@ function openModal(title, type) {
         </div>
     </div>
 
-    <ModalTrigger ref="modalTriggerRef" />
+    <ModalTrigger ref="modalTriggerRef" @trigger-selected="handleTriggerSelection" />
+    <ModalAction ref="modalActionRef" @action-selected="handleActionSelection" />
     <ModalAction ref="modalActionRef" />
 </template>
+
 
 
 <style scoped>
@@ -194,11 +213,13 @@ function openModal(title, type) {
     font-weight: 700;
     color: var(--text-1);
 }
+
 .selected-servce {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 .ifthan-cards-div {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

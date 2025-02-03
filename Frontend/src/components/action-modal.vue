@@ -16,7 +16,7 @@
 
         <!-- Show dynamic action options based on the selected service -->
         <div class="action-card-wrapper" v-if="!showAddAction">
-          <div v-for="(action, index) in selectedActions" :key="index" class="action-card">
+          <div v-for="(action, index) in selectedActions" :key="index" class="action-card" @click="handleActionSelection(action)">
             <div class="action-card-header">
               <span>{{ action.name }}</span>
             </div>
@@ -83,9 +83,15 @@ function closeModal() {
   showAddAction.value = false; // Reset when closing
 }
 
+function handleActionSelection(action) {
+  // Emit the selected action to the parent component
+  emit('action-selected', { action });
+}
+
 // Expose openModal to parent component
 defineExpose({ openModal });
 </script>
+
 
 <style scoped>
 .modal-overlay {

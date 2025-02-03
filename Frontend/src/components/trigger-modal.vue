@@ -11,19 +11,19 @@
       <div class="modal-content-div">
         <span>{{ title }}</span>
 
-        <!-- Show AddTrigger component when showAddTrigger is true -->
         <AddTrigger v-if="showAddTrigger" />
 
-        <!-- Show dynamic trigger options based on the selected service -->
         <div class="trigger-card-wrapper" v-if="!showAddTrigger">
-          <div v-for="(trigger, index) in selectedTriggers" :key="index" class="trigger-card">
+          <a href="#" v-for="(trigger, index) in selectedTriggers" 
+             :key="index" class="trigger-card"
+             @click.prevent="selectTrigger(trigger.name)">
             <div class="trigger-card-header">
               <span>{{ trigger.name }}</span>
             </div>
             <div class="trigger-card-body">
               <p>{{ trigger.description }}</p>
             </div>
-          </div>
+          </a>
           <button class="trigger-card trigger-card-add" @click="showAddTrigger = true">
             <img :src="add" />
           </button>
@@ -34,12 +34,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineEmits } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
 import AddTrigger from '@/components/sub-components/addTrigger-component.vue';
 
-// Service-specific trigger options
 const triggerOptions = {
   "Temperature": [
     { name: "Threshold", description: "Trigger when temperature crosses a threshold" },
@@ -66,8 +65,8 @@ const triggerOptions = {
 const isVisible = ref(false);
 const title = ref('');
 const showAddTrigger = ref(false);
+const emit = defineEmits(['trigger-selected']);
 
-// Dynamically get the relevant triggers based on the selected service
 const selectedTriggers = computed(() => {
   return triggerOptions[title.value] || [];
 });
@@ -75,15 +74,19 @@ const selectedTriggers = computed(() => {
 function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
-  showAddTrigger.value = false; // Reset to default state when opening
+  showAddTrigger.value = false;
 }
 
 function closeModal() {
   isVisible.value = false;
-  showAddTrigger.value = false; // Reset when closing
+  showAddTrigger.value = false;
 }
 
-// Expose openModal to parent component
+function selectTrigger(triggerName) {
+  emit('trigger-selected', { service: title.value, trigger: triggerName });
+  closeModal();
+}
+
 defineExpose({ openModal });
 </script>
 
