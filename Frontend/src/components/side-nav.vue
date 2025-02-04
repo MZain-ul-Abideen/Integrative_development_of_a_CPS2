@@ -12,36 +12,17 @@ import help from '@/assets/svgs/help.svg';
         <div class="nav-div">
             <img :src="logo" alt="Logo" class="logo-image">
             <div class="wraper-div mt-5">
-                <!-- <div class="nav-btn py-2 my-4">
-                <router-link to="/dashboard" class="svg-image my-1">
-                    <img :src="dashboard" alt="Logo" >
-                </router-link>
-                </div> -->
-
                 <div class="nav-btn py-2 my-4">
                     <router-link to="/create" class="svg-image my-1">
                         <img :src="service" alt="Logo" >
                     </router-link>
                 </div>
-
                 <div class="nav-btn py-2 my-4">
-                    <router-link to="/notifications" class="svg-image my-1">
+                    <router-link to="/rules" class="svg-image my-1">
                         <img :src="notifications" alt="Logo" >
                     </router-link>
                 </div>
-                    
-                <!-- <div class="nav-btn py-2 my-4">
-                    <router-link to="/settings" class="svg-image my-1">
-                        <img :src="settings" alt="Logo" >
-                    </router-link>
-                </div> -->
             </div>
-
-            <!-- <div class="help-icon py-2 my-4">
-                <router-link to="/help" class="svg-image my-1">
-                    <img :src="help" alt="Logo" >
-                </router-link>
-            </div> -->
             <div class="affect-1"></div>
         </div>
     </div>

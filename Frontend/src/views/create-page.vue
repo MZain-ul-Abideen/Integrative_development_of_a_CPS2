@@ -13,6 +13,7 @@ import buildingtemp from '@/assets/pictures/building-temp.png';
 import sensortemp from '@/assets/pictures/sensor-temp.png';
 import email from '@/assets/pictures/email.png';
 import timer from '@/assets/pictures/time.png';
+import LED from '@/assets/pictures/LED.png';
 
 // Refs
 const showCards1 = ref(false);
@@ -140,6 +141,10 @@ function handleActionSelection({ service, action }) {
                             <a href="#" class="ifthan-card" @click.prevent="openActionModal('Email')">
                                 <img :src="email" class="weather-img">
                                 <span>Email</span>
+                            </a>
+                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
+                                <img :src="LED" class="weather-img">
+                                <span>LED</span>
                             </a>
                         </div>
                     </div>
