@@ -10,6 +10,33 @@ import uasyncio as asyncio
 # Pin Definitions
 class PinConfig:
     DHT_PIN = 21  # Pin for the DHT22 sensor
+    LED1_PIN = 13  # Red
+    LED2_PIN = 27  # Yellow
+    LED3_PIN = 12  # Green
+
+# LED Manager
+class LEDManager:
+    def __init__(self):
+        # Initialize LEDs
+        self.led1 = Pin(PinConfig.LED1_PIN, Pin.OUT)
+        self.led2 = Pin(PinConfig.LED2_PIN, Pin.OUT)
+        self.led3 = Pin(PinConfig.LED3_PIN, Pin.OUT)
+        self.led_states = {
+            "redLed": False,
+            "yellowLed": False,
+            "greenLed": False
+        }
+
+    def update_led_states(self, new_states):
+        """Update LED states and physical LED outputs"""
+        self.led_states.update(new_states)
+        self.led1.value(self.led_states["redLed"])
+        self.led2.value(self.led_states["yellowLed"])
+        self.led3.value(self.led_states["greenLed"])
+
+    def get_led_states(self):
+        """Return current LED states"""
+        return self.led_states
 
 # Network Configuration
 class NetworkConfig:
@@ -68,8 +95,9 @@ class NetworkManager:
 
 # CoAP Server
 class SensorServer:
-    def __init__(self, sensor_manager):
+    def __init__(self, sensor_manager, led_manager):
         self.sensor_manager = sensor_manager
+        self.led_manager = led_manager
         self.server = microcoapy.Coap()
 
     def setup(self):
@@ -91,7 +119,37 @@ class SensorServer:
                         packet.token
                     )
 
+        def led_handler(packet, sender_ip, sender_port):
+            print(f'LED endpoint accessed from: {sender_ip}:{sender_port}')
+            
+            if packet.method in [COAP_METHOD.COAP_POST, COAP_METHOD.COAP_PUT]:
+                try:
+                    payload = json.loads(packet.payload.decode())
+                    self.led_manager.update_led_states(payload)
+                    response = json.dumps({"status": "success", "led_states": self.led_manager.get_led_states()})
+                    self.server.sendResponse(
+                        sender_ip,
+                        sender_port,
+                        packet.messageid,
+                        response,
+                        0x44,  # 2.04 Changed
+                        0,     # No specific content format
+                        packet.token
+                    )
+                except Exception as e:
+                    print("Error processing LED request:", str(e))
+                    self.server.sendResponse(
+                        sender_ip,
+                        sender_port,
+                        packet.messageid,
+                        json.dumps({"status": "error", "message": str(e)}),
+                        0x50,  # 5.00 Internal Server Error
+                        0,
+                        packet.token
+                    )
+
         self.server.addIncomingRequestCallback('sensors', sensor_handler)
+        self.server.addIncomingRequestCallback('leds', led_handler)
         self.server.start()
         print('CoAP server started. Waiting for requests...')
 
@@ -110,7 +168,8 @@ class SensorServer:
 class CoAPApplication:
     def __init__(self):
         self.sensor_manager = SensorManager()
-        self.sensor_server = SensorServer(self.sensor_manager)
+        self.led_manager = LEDManager()
+        self.sensor_server = SensorServer(self.sensor_manager, self.led_manager)
 
     async def run(self):
         """Run the main application"""
