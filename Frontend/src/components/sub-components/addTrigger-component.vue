@@ -1,30 +1,37 @@
 <template>
-    <div class="add-trigger-wrapper">
-        <div class="add-trigger-div">
-            <form action="" class="mt-4">
-                <input type="text" class="text-feild" placeholder="Enter Trigger Name">
-                <textarea name="discription" id="discription" class="discription-feild" placeholder="Enter Trigger Discription"></textarea>
-                <button class="button-2 my-3">Add</button>
-            </form>
-        </div>
-    </div>
+  <div class="add-trigger-wrapper">
+    <!-- Conditional Rendering Based on Selected Service -->
+    <WeatherRule v-if="selectedService === 'Temperature'" />
+    <TemperatureRule v-if="selectedService === 'Sensor Temperature'" />
+    <TimerRule v-if="selectedService === 'Timer'" />
+  </div>
 </template>
 
-<script setup></script>
+<script setup>
+import WeatherRule from '@/components/sub-components/rule-modal/weather/weather-service.vue';
+import TemperatureRule from '@/components/sub-components/rule-modal/Temperature/temperature-service.vue' ;
+import TimerRule from '@/components/sub-components/rule-modal/Timer/timer-service.vue';
+
+// Define Props
+const props = defineProps({
+  selectedService: {
+    type: String,
+    default: ''
+  },
+  selectedTrigger: {
+    type: String,
+    default: ''
+  }
+});
+</script>
 
 <style scoped>
 .add-trigger-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-.add-trigger-div {
-    display: flex;
-    flex-direction: column;
-    width: 50%;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
 }
 </style>
