@@ -56,12 +56,16 @@ import AddAction from '@/components/sub-components/addAction-component.vue';
 // Service-specific action options
 const actionOptions = {
   "Building Automation": [
-    { name: "Turn On Lights", description: "Activate the lights in a room" },
-    { name: "Lock Doors", description: "Secure the doors automatically" }
+    { name: "Increase Tempreture", description: "Activate the Heater in a room" },
+    { name: "Decrease Tempreture", description: "Set Tempreture to 21 C" }
   ],
   "Email": [
     { name: "Send Email", description: "Send an automated email notification" },
     { name: "Mark as Read", description: "Mark incoming emails as read" }
+  ],
+  "LED": [
+    { name: "Turn On", description: "Turn the LED on!" },
+    { name: "Turn Off", description: "Turn the LED off!" }
   ],
 };
 
