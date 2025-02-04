@@ -5,6 +5,7 @@ import os
 from .extensions import db
 from .services.timer_service import start_timer_service
 from .routes import main_routes
+from .services.notification_service import notification_service
 
 # Load environment variables from .env file
 load_dotenv()
@@ -23,5 +24,5 @@ def create_app():
     
     app.register_blueprint(main_routes)
     start_timer_service(app)
-    
+    notification_service.__init__(app)
     return app

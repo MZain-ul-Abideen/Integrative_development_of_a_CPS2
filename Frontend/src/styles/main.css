@@ -1,0 +1,382 @@
+/* Custom Color Palette */
+:root {
+  /* Accent Colors */
+  --accent-1: #1D6FF2;
+  --accent-2: #3ECDE0;
+  --accent-3: #FF8157;
+  --accent-4: #FFC62D;
+
+  /* UI Colors */
+  --ui-1: #ebebeb;
+  --ui-2: #0d0d0d;
+  --ui-3: #646464;
+
+  /* Semantic Colors */
+  --color-error: #dc2222;
+  --color-success: #127633;
+
+  /* Background and Border Colors */
+  --color-background: #191B1F;
+  --color-background-2: #313338;
+  --color-background-soft: #f8f8f8;
+  --color-background-mute: #f2f2f2;
+
+  --color-border: var(--ui-3);
+  --color-border-hover: #4a4a4a;
+
+  /* Text Colors */
+  --color-heading: var(--ui-1);
+  --color-text: var(--ui-1);
+
+  /* Typography */
+  --body-1-font-size: 20px;
+  /* Define the variable here */
+  --body-2-font-size: 16px;
+  --body-3-font-size: 14px;
+
+  /* Spacing */
+  --section-gap: 160px;
+
+  --card-1: #3b3f3f80;
+}
+
+/* Typography */
+body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: 'PT Sans', sans-serif;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 64px;
+}
+
+h2 {
+  font-size: 56px;
+}
+
+h3 {
+  font-size: 48px;
+}
+
+h4 {
+  font-size: 40px;
+}
+
+h5 {
+  font-size: 36px;
+}
+
+p.body-1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+p.body-2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+p.body-3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.button-1 {
+  color: var(--ui-1);
+  border: 1px solid rgb(168, 168, 168);
+  font-size: var(--body-1-font-size);
+  padding: 10px 75px;
+  border-radius: 10rem;
+  transition: box-shadow 200ms ease-in-out;
+  text-decoration: none;
+}
+
+.button-2 {
+  color: var(--ui-1);
+  background: transparent;
+  border: 1px solid var(--ui-1);
+  font-size: var(--body-1-font-size);
+  padding: 10px 75px;
+  border-radius: 10rem;
+  transition: box-shadow 200ms ease-in-out;
+}
+
+.button-1:hover {
+  box-shadow: 0px 0px 25px rgba(102, 102, 102, 0.5);
+}
+
+.button-2:hover {
+  box-shadow: 0px 0px 25px rgba(102, 102, 102, 0.5);
+}
+
+
+.text-feild {
+  width: 100%;
+  height: 50px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--ui-1);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ui-1);
+}
+
+.discription-feild {
+  width: 100%;
+  height: 300px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--ui-1);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ui-1);
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Hide number input arrows for Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+
+.dropdown {
+  color: var(--ui-1);
+  /* Optionally, add padding, border, etc. */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Some browsers might also require styling on the option elements */
+.dropdown option {
+  background-color: var(--color-background-2);
+  color: var(--ui-1);
+}
+
+
+.main-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.main-div-card {
+  background-color: var(--card-1);
+  /* Semi-transparent white */
+  backdrop-filter: blur(10px);
+  /* Apply blur for glass effect */
+  -webkit-backdrop-filter: blur(10px);
+  /* For Safari */
+  border-radius: 1.5rem;
+  /* Optional: Rounded corners for a smooth look */
+  height: 100%;
+  width: 100%;
+  padding-top: 2em;
+}
+
+
+.affect-global-blue1 {
+  height: 300px;
+  width: 300px;
+  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
+  position: absolute;
+  top: 50px;
+  right: 100px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(150px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-global-blue2 {
+  height: 150px;
+  width: 150px;
+  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
+  position: absolute;
+  top: 250px;
+  right: 350px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(100px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-global-blue3 {
+  height: 100px;
+  width: 100px;
+  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
+  position: absolute;
+  top: 450px;
+  right: 350px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(100px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-global-yellow1 {
+  height: 200px;
+  width: 200px;
+  background: #FFC62D;
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(200px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+
+.affect-global-yellow2 {
+  height: 150px;
+  width: 150px;
+  background: #FF8157;
+  position: absolute;
+  top: 280px;
+  left: 280px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(200px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-global-lightblue1 {
+  height: 250px;
+  width: 250px;
+  background: #3ECDE0;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(200px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.hover-effect {
+  position: absolute;
+  height: 300px;
+  width: 300px;
+  background: rgba(255, 255, 255, 0.219);
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  /* Prevent interactions with the shadow */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  /* Smooth fade-in effect */
+}
+
+
+.affect-mini-card-blue-1 {
+  height: 200px;
+  width: 200px;
+  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
+  position: absolute;
+  bottom: 100px;
+  right: 100px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(100px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-mini-card-blue-2 {
+  height: 100px;
+  width: 100px;
+  background: linear-gradient(0deg, rgba(39, 140, 153, 0.788) 0%, rgba(36, 132, 145, 0.644) 100%);
+  position: absolute;
+  bottom: 100px;
+  right: 300px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(70px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
+
+.affect-mini-card-yellow {
+
+  height: 100px;
+  width: 100px;
+  background: #FFC62D;
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  z-index: -1;
+  opacity: 0.9;
+  /* Slightly higher transparency for feathered look */
+  pointer-events: none;
+  /* Prevent interaction */
+  filter: blur(75px);
+  /* Apply blur to create a feathered edge */
+  border-radius: 50%;
+}
