@@ -17,18 +17,21 @@
         <!-- Show dynamic action options based on the selected service -->
         <div class="action-card-wrapper" v-if="!showAddAction">
           <!-- Display created actions -->
-          <div v-for="(action, index) in createdActions" :key="index" class="action-card" @click="selectAction(action)">
+          <!-- <div v-for="(action, index) in createdActions" :key="index" class="action-card" @click="selectAction(action)">
             <div class="action-card-header">
               <span>{{ action.name }}</span>
             </div>
             <div class="action-card-body">
               <p>{{ action.description }}</p>
             </div>
-          </div>
+          </div> -->
 
           <!-- Display default action options -->
           <div v-for="(action, index) in selectedActions" :key="index" class="action-card"
             @click="selectAction(action)">
+          <div class="dlt-list-item">
+            <img :src="del" />
+          </div>
             <div class="action-card-header">
               <span>{{ action.name }}</span>
             </div>
@@ -51,6 +54,7 @@
 import { ref, computed } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
+import del from '@/assets/svgs/delete.svg';
 import AddAction from '@/components/sub-components/addAction-component.vue';
 
 // Service-specific action options

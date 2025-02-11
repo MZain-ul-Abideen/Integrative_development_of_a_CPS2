@@ -44,6 +44,9 @@
             class="trigger-card"
             @click.prevent="selectTrigger(trigger)"
           >
+          <div class="dlt-list-item">
+            <img :src="del" />
+          </div>
             <div class="trigger-card-header">
               <span>{{ trigger.name }}</span>
             </div>
@@ -66,6 +69,7 @@
 import { ref, computed } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
+import del from '@/assets/svgs/delete.svg';
 import AddTrigger from '@/components/sub-components/addTrigger-component.vue';
 
 // Trigger options
