@@ -9,14 +9,18 @@
             </div>
 
             <div class="form-group d-flex justify-content-center">
-                <div class="switch">
-                    <input id="toggle" type="checkbox" />
-                    <label class="toggle" for="toggle">
-                        <i></i>
+                <div class="d-flex align-items-center justify-content-between">
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider1"></span>
+                    </label><label class="switch">
+                        <input type="checkbox">
+                        <span class="slider2"></span>
+                    </label><label class="switch">
+                        <input type="checkbox">
+                        <span class="slider3"></span>
                     </label>
                 </div>
-
-
             </div>
 
             <button type="submit" class="button-2 mt-4">Create</button>
@@ -55,105 +59,139 @@ const validateInput = () => {
     font-size: 1rem;
 }
 
-/* From Uiverse.io by elijahgummer */
+/* From Uiverse.io by gharsh11032000 */
+/* The switch - the box around the slider */
 .switch {
+    font-size: 17px;
     position: relative;
-    width: 210px;
-    height: 50px;
-    box-sizing: border-box;
-    padding: 3px;
-    background: #0d0d0d;
-    border-radius: 6px;
-    box-shadow:
-        inset 0 1px 1px 1px rgba(0, 0, 0, 0.5),
-        0 1px 0 0 rgba(255, 255, 255, 0.1);
+    display: inline-block;
+    width: 3.5em;
+    height: 2em;
+    margin: 1rem;
 }
 
-.switch input[type="checkbox"] {
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
+/* Hide default HTML checkbox */
+.switch input {
     opacity: 0;
-    cursor: pointer;
-}
-
-.switch input[type="checkbox"]+label {
-    position: relative;
-    display: block;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    background: #1b1c1c;
-    border-radius: 3px;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    transition: all 0.5s ease-in-out;
-}
-
-.switch input[type="checkbox"]+label:before {
-    content: "";
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    margin-left: 10px;
-    background: #fff;
-    border-radius: 50%;
-    vertical-align: middle;
-    box-shadow:
-        0 0 5px 2px rgba(165, 15, 15, 0.9),
-        0 0 3px 1px rgba(165, 15, 15, 0.9);
-    transition: all 0.5s ease-in-out;
-}
-
-.switch input[type="checkbox"]+label:after {
-    content: "";
-    display: inline-block;
     width: 0;
-    height: 100%;
-    vertical-align: middle;
+    height: 0;
 }
 
-.switch input[type="checkbox"]+label i {
-    display: block;
+/* The slider */
+.slider1 {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 3px;
-    height: 24px;
-    margin-top: -12px;
-    margin-left: -1.5px;
-    border-radius: 2px;
-    background: #0d0d0d;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    inset: 0;
+    background: #fbacac;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
 }
 
-.switch input[type="checkbox"]+label i:before,
-.switch input[type="checkbox"]+label i:after {
+.slider1:before {
+    position: absolute;
     content: "";
-    display: block;
+    height: 1.4em;
+    width: 1.4em;
+    left: 0.3em;
+    bottom: 0.3em;
+    background-color: white;
+    border-radius: 50px;
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.switch input:checked+.slider1 {
+    background: #ce4f4f;
+}
+
+.switch input:focus+.slider1 {
+    box-shadow: 0 0 1px #ce4f4f;
+}
+
+.switch input:checked+.slider1:before {
+    transform: translateX(1.6em);
+    width: 2em;
+    height: 2em;
+    bottom: 0;
+}
+
+
+
+/* The slider */
+.slider2 {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 2px;
-    background: #0d0d0d;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    inset: 0;
+    background: #acfbb0;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
 }
 
-.switch input[type="checkbox"]+label i:before {
-    left: -7px;
+.slider2:before {
+    position: absolute;
+    content: "";
+    height: 1.4em;
+    width: 1.4em;
+    left: 0.3em;
+    bottom: 0.3em;
+    background-color: white;
+    border-radius: 50px;
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.switch input[type="checkbox"]+label i:after {
-    left: 7px;
+.switch input:checked+.slider2 {
+    background: #4fce6f;
 }
 
-.switch input[type="checkbox"]:checked+label {
-    left: 50%;
+.switch input:focus+.slider2 {
+    box-shadow: 0 0 1px #4fce6f;
 }
 
-.switch input[type="checkbox"]:checked+label:before {
-    box-shadow:
-        0 0 5px 2px rgba(15, 165, 70, 0.9),
-        0 0 3px 1px rgba(15, 165, 70, 0.9);
+.switch input:checked+.slider2:before {
+    transform: translateX(1.6em);
+    width: 2em;
+    height: 2em;
+    bottom: 0;
+}
+
+
+
+/* The slider */
+.slider3 {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #acbefb;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+.slider3:before {
+    position: absolute;
+    content: "";
+    height: 1.4em;
+    width: 1.4em;
+    left: 0.3em;
+    bottom: 0.3em;
+    background-color: white;
+    border-radius: 50px;
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.switch input:checked+.slider3 {
+    background: #574fce;
+}
+
+.switch input:focus+.slider3 {
+    box-shadow: 0 0 1px #574fce;
+}
+
+.switch input:checked+.slider3:before {
+    transform: translateX(1.6em);
+    width: 2em;
+    height: 2em;
+    bottom: 0;
 }
 </style>

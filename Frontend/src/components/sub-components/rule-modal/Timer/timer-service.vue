@@ -22,7 +22,7 @@
             </div>
 
             <!-- Select to Send (Checkboxes) -->
-            <div class="form-group mt-4">
+            <!-- <div class="form-group mt-4">
                 <label>Select to Send:</label>
                 <div class="checkbox-group mt-2">
                     <label>
@@ -31,9 +31,8 @@
                     <label class="mx-4">
                         <input type="checkbox" v-model="selectedOptions" value="Temperature Inside" /> Temperature Inside
                     </label>
-                    <!-- Add more options here if needed -->
                 </div>
-            </div>
+            </div> -->
 
             <button type="submit" class="button-2 mt-4">Create</button>
 

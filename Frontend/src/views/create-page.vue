@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import ModalTrigger from '@/components/trigger-modal.vue';
 import ModalAction from '@/components/action-modal.vue';
 
@@ -10,10 +10,9 @@ import arrow from '@/assets/svgs/arrow.svg';
 
 import weatherimage from '@/assets/pictures/weather.png';
 import buildingtemp from '@/assets/pictures/building-temp.png';
-import sensortemp from '@/assets/pictures/sensor-temp.png';
+import IoT from '@/assets/pictures/IoT.png';
 import email from '@/assets/pictures/email.png';
 import timer from '@/assets/pictures/time.png';
-import LED from '@/assets/pictures/LED.png';
 
 // Refs
 const showCards1 = ref(false);
@@ -26,6 +25,31 @@ const selectedService = ref('');
 const selectedTrigger = ref('');
 const selectedActionService = ref('');
 const selectedAction = ref('');
+
+
+// Define the functions directly in the setup block
+function handleMouseMove(event) {
+  const card = event.currentTarget;
+  const hoverEffect = card.querySelector(".hover-effect");
+
+  // Get card's bounding box
+  const rect = card.getBoundingClientRect();
+
+  // Calculate mouse position within the card
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // Position the shadow
+  hoverEffect.style.top = `${y - 100}px`; // Offset to center the shadow
+  hoverEffect.style.left = `${x - 100}px`;
+  hoverEffect.style.opacity = 1; // Show the shadow
+}
+
+function handleMouseLeave(event) {
+  const hoverEffect = event.currentTarget.querySelector(".hover-effect");
+  hoverEffect.style.opacity = 0; // Hide the shadow on mouse leave
+}
+
 
 // Toggle card visibility
 function toggleIfCards() {
@@ -59,7 +83,18 @@ function handleActionSelection({ service, action }) {
 
 <template>
     <div class="main-wrapper">
-        <div class="main-div-card">
+        <div
+        class="main-div-card"
+        @mousemove="handleMouseMove"
+        @mouseleave="handleMouseLeave"
+      >
+        <div class="affect-global-blue1"></div>
+        <div class="affect-global-blue2"></div>
+        <div class="affect-global-blue3"></div>
+        <div class="affect-global-yellow1"></div>
+        <div class="affect-global-yellow2"></div>
+        <div class="affect-global-lightblue1"></div>
+        <div class="hover-effect"></div>
             <div class="content">
                 <h5 class="mb-4">Create</h5>
                 <div class="ifthan-wrapper">
@@ -93,13 +128,13 @@ function handleActionSelection({ service, action }) {
                                 <img :src="weatherimage" class="weather-img">
                                 <span>Weather</span>
                             </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
-                                <img :src="sensortemp" class="weather-img">
-                                <span>Temperature</span>
-                            </a>
                             <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Timer')">
                                 <img :src="timer" class="weather-img">
                                 <span>Timer</span>
+                            </a>
+                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
+                                <img :src="IoT" class="weather-img">
+                                <span>IoT Device</span>
                             </a>
                         </div>
                     </div>
@@ -143,8 +178,8 @@ function handleActionSelection({ service, action }) {
                                 <span>Email</span>
                             </a>
                             <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
-                                <img :src="LED" class="weather-img">
-                                <span>LED</span>
+                                <img :src="IoT" class="weather-img">
+                                <span>IoT Device</span>
                             </a>
                         </div>
                     </div>

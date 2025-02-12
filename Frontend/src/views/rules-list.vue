@@ -73,30 +73,30 @@ function dataTableMenuDeleteAction(id) {
   // Add your delete logic here
 }
 
-// Example notifications data
 const notifications = ref([
   {
-    id: 1,
-    time: "10:00 AM",
+    name: "Countdown",
     rule: "Rule 1",
     message: "Action 1",
+    time: "10:00 AM",
     status: "Active",
   },
   {
-    id: 2,
-    time: "11:00 AM",
+    name: "High Temp",
     rule: "Rule 2",
     message: "Action 2",
+    time: "11:00 AM",
     status: "Active",
   },
   {
-    id: 3,
-    time: "12:00 PM",
+    name: "Threshold",
     rule: "Rule 3",
     message: "Action 3",
+    time: "12:00 PM",
     status: "Not Active",
   },
 ]);
+
 </script>
 
 
@@ -119,20 +119,20 @@ const notifications = ref([
           <table>
             <thead>
               <tr>
-                <th>Triger ID</th>
-                <th>Time Created</th>
+                <th>Trigger Name</th>
                 <th>Rule Service</th>
                 <th>Action Service</th>
+                <th>Time Created</th>
                 <th>Status</th>
                 <th class="action-column">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(notification, index) in notifications" :key="notification.id">
-                <td>{{ notification.id }}</td>
-                <td>{{ notification.time }}</td>
+              <tr v-for="(notification, index) in notifications" :key="index">
+                <td>{{ notification.name }}</td>
                 <td>{{ notification.rule }}</td>
                 <td>{{ notification.message }}</td>
+                <td>{{ notification.time }}</td>
                 <td>{{ notification.status }}</td>
                 <td>
                   <div class="data-table-menu-dropdown">
