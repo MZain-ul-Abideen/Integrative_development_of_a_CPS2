@@ -1,6 +1,5 @@
-from app.models import NotificationTemplate, db
+from flask import current_app
 from flask_mail import Mail, Message
-from flask import current_app, render_template  # To render HTML templates
 import os
 
 class NotificationService:
@@ -10,7 +9,6 @@ class NotificationService:
             self.setup_email_config(app)
 
     def setup_email_config(self, app):
-        """Configure email settings from environment or config"""
         app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
         app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
         app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
@@ -19,65 +17,51 @@ class NotificationService:
         app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
     @staticmethod
-    def send_notification(template_name, data, notification_type='print', recipient=None):
-        """
-        Send a notification using a template.
-
-        :param template_name: Name of the notification template
-        :param data: Dictionary of data to format the template
-        :param notification_type: Type of notification (print, email, etc.)
-        :param recipient: Email recipient (required for email notifications)
-        """
-        # Fetch the template
-        template = NotificationTemplate.query.filter_by(name=template_name).first()
-
-        if not template:
-            print(f"Template '{template_name}' not found.")
-            return False
-
+    def send_notification(data, notification_type='print', recipient=None):
         try:
-            # Render the plain text message
-            plain_text_content = template.template.format(**data)
+            email_body = data.get("emailBody")
+            subject = data.get("subject")
 
-            # Render the HTML content from the email template
-            html_content = render_template("email.html", **data)
-
-        except KeyError as e:
-            print(f"Missing key in template data: {e}")
-            return False
-
-        # Send notification based on type
-        if notification_type == 'print':
-            print(f"Sending notification: {plain_text_content}")
-            return True
-
-        elif notification_type == 'email':
-            if not recipient:
-                print("Email recipient is required for email notifications")
+            if not email_body:
+                print("Error: Email body is required for email notifications.")
                 return False
 
-            try:
-                # Use current_app to access Flask app context
+            if not subject:
+                print("Error: Subject is required for email notifications.")
+                return False
+
+            if notification_type == 'print':
+                print(f"Sending notification: {email_body}")
+                return True
+
+            elif notification_type == 'email':
+                if not recipient:
+                    print("Error: Email recipient is required for email notifications.")
+                    return False
+
                 mail = Mail(current_app)
 
                 msg = Message(
-                    subject=f"Notification: {template.name}",
+                    subject=subject,
                     recipients=[recipient],
-                    body=plain_text_content,  # Plain text version
-                    html=html_content         # HTML version
+                    body=email_body
                 )
 
                 mail.send(msg)
-                print(f"Email sent to {recipient}: {plain_text_content}")
+                print(f"Email sent to {recipient}: {email_body}")
                 return True
 
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            else:
+                print(f"Unsupported notification type: {notification_type}")
                 return False
 
-        else:
-            print(f"Unsupported notification type: {notification_type}")
+        except KeyError as e:
+            print(f"Missing key in data: {e}")
             return False
 
-# Create a global instance
+        except Exception as e:
+            print(f"Error sending notification: {e}")
+            return False
+
+# Global instance
 notification_service = NotificationService()

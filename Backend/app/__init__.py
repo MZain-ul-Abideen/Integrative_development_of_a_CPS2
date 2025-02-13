@@ -4,10 +4,8 @@ from dotenv import load_dotenv
 import os
 from .extensions import db
 from .services.timer_service import start_timer_service
-from .routes import main_routes
-from .services.notification_service import notification_service
+from .services.notification_service import NotificationService
 
-# Load environment variables from .env file
 load_dotenv()
 
 def create_app():
@@ -18,11 +16,19 @@ def create_app():
     
     db.init_app(app)
     
-    # Add these lines to initialize Flask-Migrate
+    # Initialize Flask-Migrate
     migrate = Migrate()
     migrate.init_app(app, db)
     
+    # Initialize NotificationService with the app
+    global notification_service
+    notification_service = NotificationService(app)  # Create a global instance
+    
+    # Register blueprints
+    from .routes import main_routes
     app.register_blueprint(main_routes)
+    
+    # Start the timer service
     start_timer_service(app)
-    notification_service.__init__(app)
+    
     return app
