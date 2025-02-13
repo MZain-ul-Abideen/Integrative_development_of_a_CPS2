@@ -15,20 +15,14 @@
             </div>
 
             <div class="form-group">
-                <label for="temperatureValue">Set Temperature:</label>
-                <div class="slider-container">
-                    <input 
-                        type="range" 
-                        v-model="temperatureValue" 
-                        id="temperatureValue" 
-                        class="slider" 
-                        :min="minTemperature"
-                        :max="maxTemperature"
-                        :class="{'input-error': errorMessage}"
-                    />
-                    <span class="slider-value">{{ temperatureValue }}°C</span>
-                </div>
-                <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+                <label for="condition">Comfort Level:</label>
+                <select v-model="selectedCondition" id="condition" class="text-feild dropdown">
+                    <option value="select" disabled>Select</option>
+                    <option value="one">1</option>
+                    <option value="two">2</option>
+                    <option value="three">3</option>
+                    <option value="four"> 4</option>
+                </select>
             </div>
 
             <button type="submit" class="button-2 mt-4">Create</button>
@@ -45,6 +39,7 @@ const temperatureValue = ref(0); // Default temperature value
 const errorMessage = ref(''); // Stores error messages
 const minTemperature = ref(-100); // Minimum temperature
 const maxTemperature = ref(100); // Maximum temperature
+const selectedCondition = ref('select'); // Default condition
 
 // Validate input
 const validateInput = () => {
