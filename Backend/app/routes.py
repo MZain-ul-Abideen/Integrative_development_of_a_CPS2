@@ -33,7 +33,27 @@ def create_service():
         }
     }), 201
 
+@main_routes.route('/services', methods=['GET'])
+def list_services():
+    """
+    List all services.
+    """
+    try:
+        # Query all services from the database
+        services = Service.query.all()
 
+        # Convert services to a list of dictionaries
+        service_list = [{
+            "id": service.id,
+            "name": service.name
+        } for service in services]
+
+        return jsonify(service_list), 200
+
+    except Exception as e:
+        print(f"Error fetching services: {e}")
+        return jsonify({"error": "Failed to fetch services"}), 500
+    
 @main_routes.route('/rules', methods=['POST'])
 def create_rule():
     """
