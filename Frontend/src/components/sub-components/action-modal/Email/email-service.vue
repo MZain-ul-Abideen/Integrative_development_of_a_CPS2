@@ -1,87 +1,158 @@
 <template>
-    <form @submit.prevent="validateInput" class="mt-1 temperature-section">
-        <!-- Email Action Section -->
-        <div>
-            <div class="form-group">
-                <label for="ActionName">Action Name</label>
-                <input type="text" v-model="ruleName" id="ActionName" class="text-feild" placeholder="Enter Action Name"
-                    required />
-            </div>
-
-            <div class="form-group">
-                <label for="EmailAddress">Email Address</label>
-                <input type="email" v-model="emailAddress" id="EmailAddress" class="text-feild"
-                    placeholder="Enter Email Address" required />
-            </div>
-
-            <div class="form-group">
-                <label for="EmailAddress">Add Subject</label>
-                <input type="email" v-model="emailAddress" id="EmailAddress" class="text-feild"
-                    placeholder="Enter Email Subject" required />
-            </div>
-
-            <div class="form-group">
-                <label for="EmailAddress">Email</label>
-                <textarea name="Email-Content" id="EmailContent" class="discription-feild"
-                    placeholder="Write Email Here"></textarea>
-                <div class="Dorpdown-div">
-                    <!-- From Uiverse.io by Galahhad -->
-                    <div class="theme-popup">
-                        <input type="radio" name="theme" id="default" checked="">
-                        <input type="radio" name="theme" id="light">
-                        <input type="radio" name="theme" id="dark">
-                        <input type="checkbox" id="checkbox">
-                        <label for="checkbox" class="theme-popup__button">
-                            Add Ingredients
-                        </label>
-                        <div class="theme-popup__list-container">
-                            <ul class="theme-popup__list">
-                                <li>
-                                    <label for="temperature">
-                                        <span>
-                                            Temperature
-                                        </span>
-                                    </label>
-                                </li>
-                                <li>
-                                    <label for="weather">
-                                        <span>
-                                            Weather
-                                        </span>
-                                    </label>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-
-
-
-
-            <button type="submit" class="button-2 mt-4">Create</button>
+    <form @submit.prevent="createAction" class="mt-1 temperature-section">
+      <!-- Email Action Section -->
+      <div>
+        <div class="form-group">
+          <label for="ActionName">Action Name</label>
+          <input
+            type="text"
+            v-model="actionName"
+            id="ActionName"
+            class="text-feild"
+            placeholder="Enter Action Name"
+            required
+          />
         </div>
+        <div class="form-group">
+          <label for="EmailAddress">Email Address</label>
+          <input
+            type="email"
+            v-model="parameters.emailAddress"
+            id="EmailAddress"
+            class="text-feild"
+            placeholder="Enter Email Address"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="Subject">Add Subject</label>
+          <input
+            type="text"
+            v-model="parameters.subject"
+            id="Subject"
+            class="text-feild"
+            placeholder="Enter Email Subject"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="EmailContent">Email</label>
+          <textarea
+            name="Email-Content"
+            id="EmailContent"
+            v-model="parameters.emailBody"
+            class="discription-feild"
+            placeholder="Write Email Here"
+            required
+          ></textarea>
+          <div class="Dorpdown-div">
+            <!-- From Uiverse.io by Galahhad -->
+            <div class="theme-popup">
+              <input type="radio" name="theme" id="default" checked="" />
+              <input type="radio" name="theme" id="light" />
+              <input type="radio" name="theme" id="dark" />
+              <input type="checkbox" id="checkbox" />
+              <label for="checkbox" class="theme-popup__button">
+                Add Ingredients
+              </label>
+              <div class="theme-popup__list-container">
+                <ul class="theme-popup__list">
+                  <li>
+                    <label for="temperature">
+                      <span>Temperature</span>
+                    </label>
+                  </li>
+                  <li>
+                    <label for="weather">
+                      <span>Weather</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="button-2 mt-4">Create</button>
+      </div>
     </form>
-</template>
+  </template>
 
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios'; // Import Axios for making HTTP requests
 
-const ruleName = ref(''); // Stores the action name
-const emailAddress = ref(''); // Stores the email address
+// Reactive variables
+const actionName = ref(''); // Action name
+const parameters = ref({
+  emailAddress: '', // Email address
+  subject: '', // Email subject
+  emailBody: '' // Email body
+});
+const errorMessage = ref(''); // Error message for validation
 
-const validateInput = () => {
-    if (!ruleName.value || !emailAddress.value) {
-        alert("Please fill out all fields.");
-        return;
+// Function to validate input and create a new action via POST request
+const createAction = async () => {
+  errorMessage.value = ''; // Reset error message
+
+  // Validation
+  if (!actionName.value.trim()) {
+    errorMessage.value = "Please enter a valid Action name.";
+    return;
+  }
+  if (!parameters.value.emailAddress) {
+    errorMessage.value = "Please enter a valid Email Address.";
+    return;
+  }
+  if (!parameters.value.subject) {
+    errorMessage.value = "Please enter a valid Email Subject.";
+    return;
+  }
+  if (!parameters.value.emailBody) {
+    errorMessage.value = "Please write the Email Body.";
+    return;
+  }
+
+  try {
+    // Prepare the payload for the POST request
+    const payload = {
+      service_id: 5, // Service ID for Email
+      name: actionName.value,
+      action_type: "Send Email", // Action type
+      parameters: {
+        emailAddress: parameters.value.emailAddress, // Email address
+        subject: parameters.value.subject, // Email subject
+        emailBody: parameters.value.emailBody // Email body
+      }
+    };
+
+    // Log the payload for debugging
+    console.log("Payload:", payload);
+
+    // Send the POST request to the API endpoint
+    const response = await axios.post('http://127.0.0.1:5000/actions', payload);
+
+    // Handle successful response
+    console.log("Server Response:", response.data);
+    alert("Action created successfully!");
+    resetForm(); // Reset the form after successful creation
+  } catch (error) {
+    // Handle errors
+    if (error.response) {
+      errorMessage.value = `Error creating action: ${error.response.data.message || error.response.statusText}`;
+      console.error("Server Response:", error.response.data); // Log the full response
+    } else {
+      errorMessage.value = "An unexpected error occurred. Please try again later.";
     }
+    console.error("Error creating action:", error);
+  }
+};
 
-    // If validation passes, show the entered data
-    alert(`Action Name: ${ruleName.value}\nEmail Address: ${emailAddress.value}`);
+// Function to reset the form
+const resetForm = () => {
+  actionName.value = '';
+  parameters.value.emailAddress = '';
+  parameters.value.subject = '';
+  parameters.value.emailBody = '';
 };
 </script>
 

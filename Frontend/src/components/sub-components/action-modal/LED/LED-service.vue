@@ -1,47 +1,103 @@
 <template>
-    <form @submit.prevent="validateInput" class="mt-1 temperature-section">
-        <!-- Email Action Section -->
-        <div>
-            <div class="form-group">
-                <label for="ActionName">Action Name</label>
-                <input type="text" v-model="ruleName" id="ActionName" class="text-feild" placeholder="Enter Action Name"
-                    required />
-            </div>
-
-            <div class="form-group d-flex justify-content-center">
-                <div class="d-flex align-items-center justify-content-between">
-                    <label class="switch">
-                        <input type="checkbox">
-                        <span class="slider1"></span>
-                    </label><label class="switch">
-                        <input type="checkbox">
-                        <span class="slider2"></span>
-                    </label><label class="switch">
-                        <input type="checkbox">
-                        <span class="slider3"></span>
-                    </label>
-                </div>
-            </div>
-
-            <button type="submit" class="button-2 mt-4">Create</button>
+    <form @submit.prevent="createAction" class="mt-1 temperature-section">
+      <!-- LED Action Section -->
+      <div>
+        <div class="form-group">
+          <label for="ActionName">Action Name</label>
+          <input
+            type="text"
+            v-model="actionName"
+            id="ActionName"
+            class="text-feild"
+            placeholder="Enter Action Name"
+            required
+          />
         </div>
+        <div class="form-group d-flex justify-content-center">
+          <div class="d-flex align-items-center justify-content-between">
+            <label class="switch">
+              <input type="checkbox" v-model="parameters.red_led">
+              <span class="slider1"></span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" v-model="parameters.green_led">
+              <span class="slider2"></span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" v-model="parameters.blue_led">
+              <span class="slider3"></span>
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="button-2 mt-4">Create</button>
+      </div>
     </form>
-</template>
+  </template>
 
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios'; // Import Axios for making HTTP requests
 
-const ruleName = ref(''); // Stores the action name
-const emailAddress = ref(''); // Stores the email address
+// Reactive variables
+const actionName = ref(''); // Action name
+const parameters = ref({
+  red_led: false, // Red LED state
+  green_led: false, // Green LED state
+  blue_led: false // Blue LED state
+});
+const errorMessage = ref(''); // Error message for validation
 
-const validateInput = () => {
-    if (!ruleName.value || !emailAddress.value) {
-        alert("Please fill out all fields.");
-        return;
+// Function to validate input and create a new action via POST request
+const createAction = async () => {
+  errorMessage.value = ''; // Reset error message
+
+  // Validation
+  if (!actionName.value.trim()) {
+    errorMessage.value = "Please enter a valid Action name.";
+    return;
+  }
+
+  try {
+    // Prepare the payload for the POST request
+    const payload = {
+      service_id: 6, // Service ID for LED
+      name: actionName.value,
+      action_type: "Toggle LED", // Action type
+      parameters: {
+        red_led: parameters.value.red_led, // Red LED state
+        green_led: parameters.value.green_led, // Green LED state
+        blue_led: parameters.value.blue_led // Blue LED state
+      }
+    };
+
+    // Log the payload for debugging
+    console.log("Payload:", payload);
+
+    // Send the POST request to the API endpoint
+    const response = await axios.post('http://127.0.0.1:5000/actions', payload);
+
+    // Handle successful response
+    console.log("Server Response:", response.data);
+    alert("Action created successfully!");
+    resetForm(); // Reset the form after successful creation
+  } catch (error) {
+    // Handle errors
+    if (error.response) {
+      errorMessage.value = `Error creating action: ${error.response.data.message || error.response.statusText}`;
+      console.error("Server Response:", error.response.data); // Log the full response
+    } else {
+      errorMessage.value = "An unexpected error occurred. Please try again later.";
     }
+    console.error("Error creating action:", error);
+  }
+};
 
-    // If validation passes, show the entered data
-    alert(`Action Name: ${ruleName.value}\nEmail Address: ${emailAddress.value}`);
+// Function to reset the form
+const resetForm = () => {
+  actionName.value = '';
+  parameters.value.red_led = false;
+  parameters.value.green_led = false;
+  parameters.value.blue_led = false;
 };
 </script>
 

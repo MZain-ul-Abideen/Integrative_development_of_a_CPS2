@@ -82,115 +82,122 @@ function handleActionSelection({ service, action }) {
 </script>
 
 <template>
-    <div class="main-wrapper">
-        <div
-        class="main-div-card"
-        @mousemove="handleMouseMove"
-        @mouseleave="handleMouseLeave"
-      >
-        <div class="affect-global-blue1"></div>
-        <div class="affect-global-blue2"></div>
-        <div class="affect-global-blue3"></div>
-        <div class="affect-global-yellow1"></div>
-        <div class="affect-global-yellow2"></div>
-        <div class="affect-global-lightblue1"></div>
-        <div class="hover-effect"></div>
-            <div class="content">
-                <h5 class="mb-4">Create</h5>
-                <div class="ifthan-wrapper">
-                    <!-- If This Section -->
-                    <div class="ifthan-div">
-                        <div class="ifthan-header">
-                            <div class="ifthan-header-card">
-                                <span>If This</span>
-                                <div class="d-flex">
-                                    <div class="px-2">
-                                        <a href="#" @click.prevent="toggleIfCards">
-                                            <img :src="add">
-                                        </a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="edit"></a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="del"></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr v-if="selectedService && selectedTrigger">
-                            <div v-if="selectedService && selectedTrigger" class="selected-servce">
-                                <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
-                                <span><span class="fw-bold">Rule: </span>{{ selectedTrigger }}</span>
-                            </div>
-                        </div>
-                        <div class="ifthan-cards-div" v-if="showCards1">
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Temperature')">
-                                <img :src="weatherimage" class="weather-img">
-                                <span>Weather</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Timer')">
-                                <img :src="timer" class="weather-img">
-                                <span>Timer</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
-                                <img :src="IoT" class="weather-img">
-                                <span>IoT Device</span>
-                            </a>
-                        </div>
-                    </div>
+  <div class="main-wrapper">
+    <div
+      class="main-div-card"
+      @mousemove="handleMouseMove"
+      @mouseleave="handleMouseLeave"
+    >
+      <!-- Global effects -->
+      <div class="affect-global-blue1"></div>
+      <div class="affect-global-blue2"></div>
+      <div class="affect-global-blue3"></div>
+      <div class="affect-global-yellow1"></div>
+      <div class="affect-global-yellow2"></div>
+      <div class="affect-global-lightblue1"></div>
+      <div class="hover-effect"></div>
 
-                    <div class="mx-5 my-4">
-                        <img :src="arrow" alt="">
-                    </div>
-
-                    <!-- Then That Section -->
-                    <div class="ifthan-div">
-                        <div class="ifthan-header">
-                            <div class="ifthan-header-card">
-                                <span>Then That</span>
-                                <div class="d-flex">
-                                    <div class="px-2">
-                                        <a href="#" @click.prevent="toggleThenCards">
-                                            <img :src="add">
-                                        </a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="edit"></a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="del"></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr v-if="selectedActionService && selectedAction">
-                            <div v-if="selectedActionService && selectedAction" class="selected-servce">
-                                <span><span class="fw-bold">Service: </span>{{ selectedActionService }}</span>
-                                <span><span class="fw-bold">Action: </span>{{ selectedAction }}</span>
-                            </div>
-                        </div>
-                        <div class="ifthan-cards-div" v-if="showCards2">
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('Building Automation')">
-                                <img :src="buildingtemp" class="weather-img">
-                                <span>Building Automation</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('Email')">
-                                <img :src="email" class="weather-img">
-                                <span>Email</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
-                                <img :src="IoT" class="weather-img">
-                                <span>IoT Device</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <form action="" class="content">
+        <div class="d-flex align-items-center justify-content-between mb-5">
+          <h5 class="mb-4">Create</h5>
+          <button type="button" class="button-2" @click="createRule">Create Rule</button>
         </div>
+
+        <div class="ifthan-wrapper">
+          <!-- If This Section -->
+          <div class="ifthan-div">
+            <div class="ifthan-header">
+              <div class="ifthan-header-card">
+                <span>If This</span>
+                <div class="d-flex">
+                  <div class="px-2">
+                    <!-- Add button for If This -->
+                    <a href="#" @click.prevent="toggleIfCards">
+                      <img :src="add">
+                    </a>
+                  </div>
+                  <div class="px-2">
+                    <!-- Delete button -->
+                    <a href="#"><img :src="del"></a>
+                  </div>
+                </div>
+              </div>
+              <hr v-if="selectedService && selectedTrigger">
+              <div v-if="selectedService && selectedTrigger" class="selected-servce">
+                <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
+                <span><span class="fw-bold">Trigger: </span>{{ selectedTrigger }}</span>
+              </div>
+            </div>
+            <!-- Cards for If This -->
+            <div class="ifthan-cards-div" v-if="showCards1">
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Temperature')">
+                <img :src="weatherimage" class="weather-img">
+                <span>Weather</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Timer')">
+                <img :src="timer" class="weather-img">
+                <span>Timer</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
+                <img :src="IoT" class="weather-img">
+                <span>IoT Device</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Arrow separator -->
+          <div class="mx-5 my-4">
+            <img :src="arrow" alt="">
+          </div>
+
+          <!-- Then That Section -->
+          <div class="ifthan-div">
+            <div class="ifthan-header">
+              <div class="ifthan-header-card">
+                <span>Then That</span>
+                <div class="d-flex">
+                  <div class="px-2">
+                    <!-- Add button for Then That -->
+                    <a href="#" @click.prevent="toggleThenCards">
+                      <img :src="add">
+                    </a>
+                  </div>
+                  <div class="px-2">
+                    <!-- Delete button -->
+                    <a href="#"><img :src="del"></a>
+                  </div>
+                </div>
+              </div>
+              <hr v-if="selectedActionService && selectedAction">
+              <div v-if="selectedActionService && selectedAction" class="selected-servce">
+                <span><span class="fw-bold">Service: </span>{{ selectedActionService }}</span>
+                <span><span class="fw-bold">Action: </span>{{ selectedAction }}</span>
+              </div>
+            </div>
+            <!-- Cards for Then That -->
+            <div class="ifthan-cards-div" v-if="showCards2">
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('Building Automation')">
+                <img :src="buildingtemp" class="weather-img">
+                <span>Building Automation</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('Email')">
+                <img :src="email" class="weather-img">
+                <span>Email</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
+                <img :src="IoT" class="weather-img">
+                <span>IoT Device</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
     <!-- Modals -->
     <ModalTrigger ref="modalTriggerRef" @trigger-selected="handleTriggerSelection" />
     <ModalAction ref="modalActionRef" @action-selected="handleActionSelection" />
+  </div>
 </template>
 
 <style scoped>
