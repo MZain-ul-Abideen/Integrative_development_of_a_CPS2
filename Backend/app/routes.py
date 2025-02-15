@@ -4,10 +4,14 @@ from .models import Service, Rule, Action, TriggerActionLink
 from .services.sensor_simulator import fetch_sensor_data
 from .services.api_client import fetch_weather_data
 from .services.notification_service import notification_service
+
 # Create a Blueprint for the main routes
 main_routes = Blueprint('main', __name__)
 
-# Rule Management Routes
+# -------------------
+# Service Management
+# -------------------
+
 @main_routes.route('/services', methods=['POST'])
 def create_service():
     """
@@ -22,16 +26,21 @@ def create_service():
         return jsonify({"error": "Service already exists"}), 400
 
     new_service = Service(name=data['name'])
-    db.session.add(new_service)
-    db.session.commit()
 
-    return jsonify({
-        "message": "Service created successfully",
-        "service": {
-            "id": new_service.id,
-            "name": new_service.name
-        }
-    }), 201
+    try:
+        db.session.add(new_service)
+        db.session.commit()
+        return jsonify({
+            "message": "Service created successfully",
+            "service": {
+                "id": new_service.id,
+                "name": new_service.name
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 @main_routes.route('/services', methods=['GET'])
 def list_services():
@@ -39,29 +48,29 @@ def list_services():
     List all services.
     """
     try:
-        # Query all services from the database
         services = Service.query.all()
-
-        # Convert services to a list of dictionaries
         service_list = [{
             "id": service.id,
             "name": service.name
         } for service in services]
-
         return jsonify(service_list), 200
-
     except Exception as e:
         print(f"Error fetching services: {e}")
         return jsonify({"error": "Failed to fetch services"}), 500
-    
+
+
+# -------------------
+# Rule (Trigger) Management
+# -------------------
+
 @main_routes.route('/rules', methods=['POST'])
 def create_rule():
     """
     Create a new rule (trigger).
     """
     data = request.get_json()
-    if not data or 'service_id' not in data or 'name' not in data or 'condition' not in data or 'email_body' not in data:
-        return jsonify({"error": "Service ID, name, condition, and email body are required"}), 400
+    if not data or 'service_id' not in data or 'name' not in data or 'condition' not in data:
+        return jsonify({"error": "Service ID, name, and condition are required"}), 400
 
     service = Service.query.get(data['service_id'])
     if not service:
@@ -71,25 +80,56 @@ def create_rule():
         name=data['name'],
         service_id=data['service_id'],
         condition=data['condition'],
-        email_body=data['email_body']
+        email_body=data.get('email_body')  # Optional for non-email rules
     )
-    db.session.add(new_rule)
-    db.session.commit()
 
-    return jsonify({
-        "message": "Rule created successfully",
-        "rule": {
-            "id": new_rule.id,
-            "name": new_rule.name,
-            "condition": new_rule.condition,
-            "email_body": new_rule.email_body,
-            "service": {
-                "id": service.id,
-                "name": service.name
+    try:
+        db.session.add(new_rule)
+        db.session.commit()
+        return jsonify({
+            "message": "Rule created successfully",
+            "rule": {
+                "id": new_rule.id,
+                "name": new_rule.name,
+                "condition": new_rule.condition,
+                "email_body": new_rule.email_body,
+                "service": {
+                    "id": service.id,
+                    "name": service.name
+                }
             }
-        }
-    }), 201
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
+
+@main_routes.route('/rules', methods=['GET'])
+def list_rules():
+    """
+    List all created rules.
+    """
+    try:
+        rules = Rule.query.all()
+        rule_list = [{
+            "id": rule.id,
+            "name": rule.name,
+            "condition": rule.condition,
+            "email_body": rule.email_body,
+            "service": {
+                "id": rule.service.id,
+                "name": rule.service.name
+            }
+        } for rule in rules]
+        return jsonify(rule_list), 200
+    except Exception as e:
+        print(f"Error fetching rules: {e}")
+        return jsonify({"error": "Failed to fetch rules"}), 500
+
+
+# -------------------
+# Action Management
+# -------------------
 
 @main_routes.route('/actions', methods=['POST'])
 def create_action():
@@ -97,8 +137,8 @@ def create_action():
     Create a new action.
     """
     data = request.get_json()
-    if not data or 'service_id' not in data or 'name' not in data or 'action_type' not in data or 'parameters' not in data:
-        return jsonify({"error": "Service ID, name, action type, and parameters are required"}), 400
+    if not data or 'service_id' not in data or 'name' not in data or 'action_type' not in data:
+        return jsonify({"error": "Service ID, name, and action type are required"}), 400
 
     service = Service.query.get(data['service_id'])
     if not service:
@@ -108,25 +148,56 @@ def create_action():
         name=data['name'],
         service_id=data['service_id'],
         action_type=data['action_type'],
-        parameters=data['parameters']
+        parameters=data.get('parameters', {})  # Store action-specific parameters
     )
-    db.session.add(new_action)
-    db.session.commit()
 
-    return jsonify({
-        "message": "Action created successfully",
-        "action": {
-            "id": new_action.id,
-            "name": new_action.name,
-            "action_type": new_action.action_type,
-            "parameters": new_action.parameters,
-            "service": {
-                "id": service.id,
-                "name": service.name
+    try:
+        db.session.add(new_action)
+        db.session.commit()
+        return jsonify({
+            "message": "Action created successfully",
+            "action": {
+                "id": new_action.id,
+                "name": new_action.name,
+                "action_type": new_action.action_type,
+                "parameters": new_action.parameters,
+                "service": {
+                    "id": service.id,
+                    "name": service.name
+                }
             }
-        }
-    }), 201
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
+
+@main_routes.route('/actions', methods=['GET'])
+def list_actions():
+    """
+    List all created actions.
+    """
+    try:
+        actions = Action.query.all()
+        action_list = [{
+            "id": action.id,
+            "name": action.name,
+            "action_type": action.action_type,
+            "parameters": action.parameters,
+            "service": {
+                "id": action.service.id,
+                "name": action.service.name
+            }
+        } for action in actions]
+        return jsonify(action_list), 200
+    except Exception as e:
+        print(f"Error fetching actions: {e}")
+        return jsonify({"error": "Failed to fetch actions"}), 500
+
+
+# -------------------
+# Link Rules and Actions
+# -------------------
 
 @main_routes.route('/link-rule-action', methods=['POST'])
 def link_rule_action():
@@ -146,19 +217,28 @@ def link_rule_action():
         return jsonify({"error": "Action not found"}), 404
 
     new_link = TriggerActionLink(rule_id=rule.id, action_id=action.id)
-    db.session.add(new_link)
-    db.session.commit()
 
-    return jsonify({
-        "message": "Rule and action linked successfully",
-        "link": {
-            "rule_id": rule.id,
-            "rule_name": rule.name,
-            "action_id": action.id,
-            "action_name": action.name
-        }
-    }), 201
-    
+    try:
+        db.session.add(new_link)
+        db.session.commit()
+        return jsonify({
+            "message": "Rule and action linked successfully",
+            "link": {
+                "rule_id": rule.id,
+                "rule_name": rule.name,
+                "action_id": action.id,
+                "action_name": action.name
+            }
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
+# -------------------
+# Debugging Routes
+# -------------------
+
 @main_routes.route('/debug/sensor', methods=['GET'])
 def debug_sensor():
     """
@@ -178,7 +258,13 @@ def debug_sensor():
         "sensor_data": sensor_data,
         "weather_data": weather_data,
         "combined": combined_data
-    })
+    }), 200
+
+
+# -------------------
+# Test Notification Route
+# -------------------
+
 @main_routes.route('/send-notification', methods=['POST'])
 def send_test_notification():
     """
@@ -186,7 +272,6 @@ def send_test_notification():
     """
     data = request.get_json()
 
-    # Validate input
     if not data or 'emailBody' not in data or 'subject' not in data or 'recipient' not in data:
         return jsonify({"error": "Email body, subject, and recipient are required"}), 400
 
@@ -226,20 +311,3 @@ def send_test_notification():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
-@main_routes.route('/rules', methods=['GET'])
-def list_rules():
-    """
-    List all created rules.
-    """
-    rules = Rule.query.all()
-    return jsonify([{
-        "id": rule.id,
-        "name": rule.name,
-        "condition": rule.condition,
-        "email_body": rule.email_body,
-        "service": {
-            "id": rule.service.id,
-            "name": rule.service.name
-        }
-    } for rule in rules]), 200

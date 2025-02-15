@@ -1,6 +1,7 @@
 from flask import current_app
 from flask_mail import Mail, Message
 import os
+import paho.mqtt.client as mqtt
 
 class NotificationService:
     def __init__(self, app=None):
@@ -62,6 +63,16 @@ class NotificationService:
         except Exception as e:
             print(f"Error sending notification: {e}")
             return False
-
+    @staticmethod
+    def mqtt_publish(data):
+        try:
+            client = mqtt.Client()
+            client.connect("193.49.165.40", 1883, 60)  # Connect to MQTT broker
+            client.publish(data['topic'], data['payload'])  # Publish message
+            client.disconnect()
+            return True
+        except Exception as e:
+            print(f"Error publishing MQTT message: {e}")
+            return False
 # Global instance
 notification_service = NotificationService()
