@@ -310,3 +310,34 @@ def send_test_notification():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@main_routes.route('/linked-rules-actions', methods=['GET'])
+def list_linked_rules_actions():
+    """
+    List all linked rules and actions.
+    """
+    try:
+        links = TriggerActionLink.query.all()
+        link_list = [{
+            "rule_id": link.rule.id,
+            "rule_name": link.rule.name,
+            "rule_condition": link.rule.condition,
+            "rule_service": {
+                "id": link.rule.service.id,
+                "name": link.rule.service.name
+            },
+            "action_id": link.action.id,
+            "action_name": link.action.name,
+            "action_type": link.action.action_type,
+            "action_parameters": link.action.parameters,
+            "action_service": {
+                "id": link.action.service.id,
+                "name": link.action.service.name
+            }
+        } for link in links]
+
+        return jsonify(link_list), 200
+
+    except Exception as e:
+        print(f"Error fetching linked rules and actions: {e}")
+        return jsonify({"error": "Failed to fetch linked rules and actions"}), 500
