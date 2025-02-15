@@ -11,7 +11,7 @@ class Rule(db.Model):
     condition = db.Column(db.String(500), nullable=False)  # e.g., "outside_temperature > 20" or "weather_condition == 'Rainy'"
     range_value = db.Column(db.Float, nullable=True)       # For temperature-based rules
     last_executed = db.Column(db.Float, default=0)         # For timer-based rules
-
+    email_body = db.Column(db.Text, nullable=True)
     service = db.relationship('Service', backref='rules')
 
 class Action(db.Model):
