@@ -1,8 +1,8 @@
-"""Add email_body to Rule
+"""Initial migration
 
-Revision ID: 9cb7d813f459
+Revision ID: b6dd77a7a6f7
 Revises: 
-Create Date: 2025-02-12 22:26:27.886164
+Create Date: 2025-02-15 15:14:51.341117
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9cb7d813f459'
+revision = 'b6dd77a7a6f7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,8 +38,8 @@ def upgrade():
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('service_id', sa.Integer(), nullable=False),
     sa.Column('condition', sa.String(length=500), nullable=False),
-    sa.Column('email_body', sa.Text(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('range_value', sa.Float(), nullable=True),
+    sa.Column('last_executed', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['service_id'], ['service.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

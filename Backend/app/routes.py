@@ -69,6 +69,7 @@ def create_rule():
     Create a new rule (trigger).
     """
     data = request.get_json()
+
     if not data or 'service_id' not in data or 'name' not in data or 'condition' not in data:
         return jsonify({"error": "Service ID, name, and condition are required"}), 400
 
@@ -137,6 +138,7 @@ def create_action():
     Create a new action.
     """
     data = request.get_json()
+
     if not data or 'service_id' not in data or 'name' not in data or 'action_type' not in data:
         return jsonify({"error": "Service ID, name, and action type are required"}), 400
 
@@ -205,6 +207,7 @@ def link_rule_action():
     Link a rule (trigger) with an action.
     """
     data = request.get_json()
+
     if not data or 'rule_id' not in data or 'action_id' not in data:
         return jsonify({"error": "Rule ID and Action ID are required"}), 400
 
@@ -233,6 +236,32 @@ def link_rule_action():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@main_routes.route('/linked-rules-actions', methods=['GET'])
+def list_linked_rules_actions():
+    """
+    List all linked rules and actions.
+    """
+    try:
+        links = TriggerActionLink.query.all()
+        link_list = [{
+            "rule_id": link.rule.id,
+            "rule_name": link.rule.name,
+            "rule_condition": link.rule.condition,
+            "action_id": link.action.id,
+            "action_name": link.action.name,
+            "action_type": link.action.action_type,
+            "action_parameters": link.action.parameters,
+            "service": {
+                "id": link.rule.service.id,
+                "name": link.rule.service.name
+            }
+        } for link in links]
+        return jsonify(link_list), 200
+    except Exception as e:
+        print(f"Error fetching linked rules and actions: {e}")
+        return jsonify({"error": "Failed to fetch linked rules and actions"}), 500
 
 
 # -------------------
@@ -308,6 +337,5 @@ def send_test_notification():
 
     except KeyError as e:
         return jsonify({"error": f"Missing key in data: {e}"}), 400
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
