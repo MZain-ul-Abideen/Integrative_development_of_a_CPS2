@@ -116,7 +116,7 @@ def list_rules():
             "id": rule.id,
             "name": rule.name,
             "condition": rule.condition,
-            "email_body": rule.email_body,
+            "email_body": rule.email_body or "",  # Use empty string if email_body is None
             "service": {
                 "id": rule.service.id,
                 "name": rule.service.name
