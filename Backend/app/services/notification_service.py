@@ -1,7 +1,11 @@
+# /app/services/notification_service.py
 from flask import current_app
 from flask_mail import Mail, Message
 import os
 import paho.mqtt.client as mqtt
+import asyncio
+import json
+from aiocoap import *
 
 class NotificationService:
     def __init__(self, app=None):
@@ -23,14 +27,6 @@ class NotificationService:
             email_body = data.get("emailBody")
             subject = data.get("subject")
 
-            if not email_body:
-                print("Error: Email body is required for email notifications.")
-                return False
-
-            if not subject:
-                print("Error: Subject is required for email notifications.")
-                return False
-
             if notification_type == 'print':
                 print(f"Sending notification: {email_body}")
                 return True
@@ -45,7 +41,7 @@ class NotificationService:
                 msg = Message(
                     subject=subject,
                     recipients=[recipient],
-                    body=email_body
+                    body=email_body.format(**data)  # Replace placeholders dynamically
                 )
 
                 mail.send(msg)
@@ -63,6 +59,7 @@ class NotificationService:
         except Exception as e:
             print(f"Error sending notification: {e}")
             return False
+
     @staticmethod
     def mqtt_publish(data):
         try:
@@ -74,5 +71,28 @@ class NotificationService:
         except Exception as e:
             print(f"Error publishing MQTT message: {e}")
             return False
+
+    @staticmethod
+    async def coap_update_leds(host, payload):
+        """
+        Send a CoAP PUT request to control the LEDs on the ESP32.
+        """
+        try:
+            protocol = await Context.create_client_context()
+            request = Message(
+                code=PUT,
+                payload=json.dumps(payload).encode('utf-8'),
+                uri=f'coap://{host}/leds'
+            )
+
+            response = await protocol.request(request).response
+            data = json.loads(response.payload.decode('utf-8'))
+
+            return data.get("status") == "success"
+
+        except Exception as e:
+            print(f"Error updating LED states via CoAP: {e}")
+            return False
+
 # Global instance
 notification_service = NotificationService()

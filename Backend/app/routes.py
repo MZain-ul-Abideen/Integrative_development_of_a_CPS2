@@ -4,7 +4,8 @@ from .models import Service, Rule, Action, TriggerActionLink
 from .services.sensor_simulator import fetch_sensor_data
 from .services.api_client import fetch_weather_data
 from .services.notification_service import notification_service
-
+import asyncio
+from .services.coap_client import update_led_states
 # Create a Blueprint for the main routes
 main_routes = Blueprint('main', __name__)
 
@@ -57,7 +58,6 @@ def list_services():
     except Exception as e:
         print(f"Error fetching services: {e}")
         return jsonify({"error": "Failed to fetch services"}), 500
-
 
 # -------------------
 # Rule (Trigger) Management
@@ -116,7 +116,7 @@ def list_rules():
             "id": rule.id,
             "name": rule.name,
             "condition": rule.condition,
-            "email_body": rule.email_body or "",  # Use empty string if email_body is None
+            "email_body": rule.email_body or "",  # Use empty string if None
             "service": {
                 "id": rule.service.id,
                 "name": rule.service.name
@@ -126,7 +126,6 @@ def list_rules():
     except Exception as e:
         print(f"Error fetching rules: {e}")
         return jsonify({"error": "Failed to fetch rules"}), 500
-
 
 # -------------------
 # Action Management
@@ -196,7 +195,6 @@ def list_actions():
         print(f"Error fetching actions: {e}")
         return jsonify({"error": "Failed to fetch actions"}), 500
 
-
 # -------------------
 # Link Rules and Actions
 # -------------------
@@ -237,33 +235,6 @@ def link_rule_action():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
-@main_routes.route('/linked-rules-actions', methods=['GET'])
-def list_linked_rules_actions():
-    """
-    List all linked rules and actions.
-    """
-    try:
-        links = TriggerActionLink.query.all()
-        link_list = [{
-            "rule_id": link.rule.id,
-            "rule_name": link.rule.name,
-            "rule_condition": link.rule.condition,
-            "action_id": link.action.id,
-            "action_name": link.action.name,
-            "action_type": link.action.action_type,
-            "action_parameters": link.action.parameters,
-            "service": {
-                "id": link.rule.service.id,
-                "name": link.rule.service.name
-            }
-        } for link in links]
-        return jsonify(link_list), 200
-    except Exception as e:
-        print(f"Error fetching linked rules and actions: {e}")
-        return jsonify({"error": "Failed to fetch linked rules and actions"}), 500
-
-
 # -------------------
 # Debugging Routes
 # -------------------
@@ -288,7 +259,6 @@ def debug_sensor():
         "weather_data": weather_data,
         "combined": combined_data
     }), 200
-
 
 # -------------------
 # Test Notification Route
@@ -337,5 +307,6 @@ def send_test_notification():
 
     except KeyError as e:
         return jsonify({"error": f"Missing key in data: {e}"}), 400
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500

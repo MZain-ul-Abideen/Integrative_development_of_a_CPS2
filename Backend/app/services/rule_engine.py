@@ -1,9 +1,11 @@
+# /app/services/rule_engine.py
 from app.models import Rule, TriggerActionLink, db
 from .sensor_simulator import fetch_sensor_data
 from .api_client import fetch_weather_data
 from .notification_service import notification_service
 import operator
 import time
+import asyncio  # Import asyncio for running async functions
 
 class RuleEngine:
     OPERATORS = {
@@ -29,7 +31,6 @@ class RuleEngine:
             parts = condition.split()
             if len(parts) != 3:
                 raise ValueError("Invalid condition format")
-
             variable = parts[0]
             op = parts[1]
             value = parts[2]
@@ -146,27 +147,39 @@ class RuleEngine:
                         notification_type='email',
                         recipient=email_address
                     )
+
                     if success:
                         print(f"Email sent successfully for rule: {rule.name}")
                     else:
                         print(f"Failed to send email for rule: {rule.name}")
 
-                elif action.action_type == "Toggle LED":
-                    red_led = action.parameters.get("red_led", False)
-                    green_led = action.parameters.get("green_led", False)
-                    blue_led = action.parameters.get("blue_led", False)
+                elif action.action_type == "Toggle LED":  # NEW: Handle LED actions
+                    red_led = action.parameters.get("redLed", False)
+                    yellow_led = action.parameters.get("yellowLed", False)
+                    green_led = action.parameters.get("greenLed", False)
 
-                    if red_led or green_led or blue_led:
-                        print(f"LED toggled for rule: {rule.name}")
-                        # Simulate LED toggle logic (or integrate with hardware)
-                        if red_led:
-                            print("Red LED turned ON")
-                        if green_led:
-                            print("Green LED turned ON")
-                        if blue_led:
-                            print("Blue LED turned ON")
+                    if not any([red_led, yellow_led, green_led]):
+                        print(f"No LED states specified for rule: {rule.name}")
+                        continue
+
+                    try:
+                        # Wrap the async call with asyncio.run()
+                        success = asyncio.run(notification_service.coap_update_leds(
+                            host="192.168.123.226",  # Replace with your ESP32's IP address
+                            payload={
+                                "redLed": red_led,
+                                "yellowLed": yellow_led,
+                                "greenLed": green_led
+                            }
+                        ))
+
+                        if success:
+                            print(f"LED states updated successfully for rule: {rule.name}")
+                        else:
+                            print(f"Failed to update LED states for rule: {rule.name}")
+
+                    except Exception as e:
+                        print(f"Error toggling LEDs: {e}")
 
                 else:
                     print(f"Unsupported action type: {action.action_type}")
-
-        return triggered_rules
