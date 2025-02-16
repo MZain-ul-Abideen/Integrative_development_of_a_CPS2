@@ -24,7 +24,7 @@ def create_app():
 
     # Initialize database
     db.init_app(app)
-
+    migrate = Migrate(app, db)
     # Enable CORS for all routes
     CORS(app, resources={r"/*": {"origins": "http://localhost:8080"}})  # Allow requests from localhost:8080
 

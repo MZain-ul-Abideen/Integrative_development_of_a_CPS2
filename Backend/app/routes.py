@@ -6,6 +6,7 @@ from .services.api_client import fetch_weather_data
 from .services.notification_service import notification_service
 import asyncio
 from .services.coap_client import update_led_states
+from flask import current_app
 # Create a Blueprint for the main routes
 main_routes = Blueprint('main', __name__)
 
@@ -341,3 +342,45 @@ def list_linked_rules_actions():
     except Exception as e:
         print(f"Error fetching linked rules and actions: {e}")
         return jsonify({"error": "Failed to fetch linked rules and actions"}), 500
+    
+@main_routes.route('/rules/<int:rule_id>', methods=['DELETE'])
+def delete_rule(rule_id):
+    """
+    Delete a rule and its associated links.
+    """
+    rule = Rule.query.get(rule_id)
+    if not rule:
+        return jsonify({"error": "Rule not found"}), 404
+
+    try:
+        # Remove all links associated with the rule
+        TriggerActionLink.query.filter_by(rule_id=rule_id).delete()
+
+        # Delete the rule itself
+        db.session.delete(rule)
+        db.session.commit()
+
+        # Get the notification service from current app
+        notification_service = current_app.notification_service
+
+        # Optionally, send a CoAP request to reset LED states
+        asyncio.run(notification_service.coap_update_leds(
+            host="192.168.123.226",  # Replace with your ESP32's IP address
+            payload={
+                "redLed": False,
+                "yellowLed": False,
+                "greenLed": False
+            }
+        ))
+
+        return jsonify({
+            "message": "Rule deleted successfully",
+            "rule": {
+                "id": rule.id,
+                "name": rule.name
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

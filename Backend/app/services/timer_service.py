@@ -5,7 +5,7 @@ from flask import current_app
 scheduler = BackgroundScheduler()
 
 def start_timer_service(app):
-    @scheduler.scheduled_job('interval', minutes=5, id='rule_evaluation')  # Evaluate every minute
+    @scheduler.scheduled_job('interval', minutes=1, id='rule_evaluation')  # Evaluate every minute
     def evaluate_rules_periodically():
         with app.app_context():
             try:
