@@ -75,25 +75,22 @@ function dataTableMenuDeleteAction(id) {
 
 const notifications = ref([
   {
-    name: "Countdown",
-    rule: "Rule 1",
-    message: "Action 1",
+    ID: "1",
+    Trigger: "Trigger 1",
+    Action: "Action 1",
     time: "10:00 AM",
-    status: "Active",
   },
   {
-    name: "High Temp",
-    rule: "Rule 2",
-    message: "Action 2",
+    ID: "2",
+    Trigger: "Trigger 2",
+    Action: "Action 2",
     time: "11:00 AM",
-    status: "Active",
   },
   {
-    name: "Threshold",
-    rule: "Rule 3",
-    message: "Action 3",
+    ID: "3",
+    Trigger: "Trigger 3",
+    Action: "Action 3",
     time: "12:00 PM",
-    status: "Not Active",
   },
 ]);
 
@@ -115,25 +112,23 @@ const notifications = ref([
         <div class="affect-global-lightblue1"></div>
         <div class="hover-effect"></div>
         <div class="content">
-          <h5 class="mb-4">All Triggers</h5>
+          <h5 class="mb-4">Rules List</h5>
           <table>
             <thead>
               <tr>
+                <th>Rule ID</th>
                 <th>Trigger Name</th>
-                <th>Rule Service</th>
-                <th>Action Service</th>
+                <th>Action Name</th>
                 <th>Time Created</th>
-                <th>Status</th>
                 <th class="action-column">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(notification, index) in notifications" :key="index">
-                <td>{{ notification.name }}</td>
-                <td>{{ notification.rule }}</td>
-                <td>{{ notification.message }}</td>
+                <td>{{ notification.ID }}</td>
+                <td>{{ notification.Trigger }}</td>
+                <td>{{ notification.Action }}</td>
                 <td>{{ notification.time }}</td>
-                <td>{{ notification.status }}</td>
                 <td>
                   <div class="data-table-menu-dropdown">
                     <a
@@ -146,7 +141,6 @@ const notifications = ref([
                       v-if="openDropdowns.has(index)"
                       class="data-table-menu-dropdown-menu"
                     >
-                      <a @click.prevent="dataTableMenuViewAction(notification.id)">View</a>
                       <a @click.prevent="dataTableMenuDeleteAction(notification.id)">Delete</a>
                     </div>
                   </div>
@@ -254,6 +248,7 @@ tbody tr:hover {
   padding: 0.5rem 1rem;
   color: var(--ui-2);
   text-decoration: none;
+  cursor: pointer;
 }
 
 .data-table-menu-dropdown-menu a:hover {

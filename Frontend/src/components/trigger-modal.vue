@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isVisible" class="modal-overlay">
+  <div v-if="isVisible" class="modal-overlay" @click.self="closeModal">
     <div class="modal-content-wrapper">
       <div class="modal-content-header">
         <span v-if="!showAddTrigger">Choose a Trigger</span>
@@ -10,37 +10,40 @@
       </div>
       <div class="modal-content-div">
         <span v-if="!showAddTrigger">{{ title }}</span>
+
         <!-- AddTrigger component -->
-        <AddTrigger
-          v-if="showAddTrigger"
-          :selectedService="title"
-          @trigger-created="handleTriggerCreated"
-        />
-        <!-- Trigger cards -->
-        <div class="trigger-card-wrapper" v-if="!showAddTrigger">
-          <!-- Display filtered rules -->
-          <a
-            href="#"
-            v-for="(rule, index) in selectedTriggers"
-            :key="'rule-' + index"
-            class="trigger-card"
-            @click.prevent="selectTrigger(rule)"
-          >
-            <!-- <a class="dlt-list-item">
-              <img :src="del" />
-            </a> -->
-            <div class="trigger-card-header">
-              <span>{{ rule.name }}</span>
+        <AddTrigger v-if="showAddTrigger" :selectedService="title" @trigger-created="handleTriggerCreated" />
+
+        <!-- Trigger cards inside a scrollable iframe-like div -->
+        <div class="trigger-card-container" v-if="!showAddTrigger">
+          <div class="trigger-card-wrapper">
+            <!-- Add new rule button -->
+            <button class="trigger-card trigger-card-add" @click="showAddTrigger = true">
+              <img :src="add" />
+            </button>
+
+            <div class="trigger-card" v-for="(rule, index) in selectedTriggers" :key="'rule-' + index">
+              <div class="dlt-btn-dev">
+                <a href="">
+                  <img :src="cross">
+                </a>
+              </div>
+              <div class="trigger-card-select">
+                <!-- Display filtered rules -->
+                <a href="#" @click.prevent="selectTrigger(rule)">
+                  <div class="trigger-card-header">
+                    <span>{{ rule.name }}</span>
+                  </div>
+                </a>
+              </div>
+
             </div>
-          </a>
-          <!-- No rules message -->
-          <div v-if="selectedTriggers.length === 0" class="no-rules-message">
-            No rules available for this category.
+
+            <!-- No rules message -->
+            <div v-if="selectedTriggers.length === 0" class="no-rules-message">
+              No rules available for this category.
+            </div>
           </div>
-          <!-- Add new rule button -->
-          <button class="trigger-card trigger-card-add" @click="showAddTrigger = true">
-            <img :src="add" />
-          </button>
         </div>
       </div>
     </div>
@@ -48,12 +51,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
 import del from '@/assets/svgs/delete.svg';
 import AddTrigger from '@/components/sub-components/addTrigger-component.vue';
-import api from '@/api'; // Import your Axios utility
+import api from '@/api';
 
 // Service ID to Category Mapping
 const serviceIdToCategory = {
@@ -66,14 +69,14 @@ const serviceIdToCategory = {
 const isVisible = ref(false);
 const title = ref('');
 const showAddTrigger = ref(false);
-const createdTriggers = ref([]); // Stores created rules
+const createdTriggers = ref([]);
 
 // Computed
 const selectedTriggers = computed(() => {
   const category = title.value;
-  return createdTriggers.value.filter(rule => 
-    rule.category === category
-  );
+  return createdTriggers.value
+    .filter(rule => rule.category === category)
+    .sort((a, b) => (a.id > b.id ? -1 : 1));
 });
 
 // Emits
@@ -81,14 +84,18 @@ const emit = defineEmits(['trigger-selected']);
 
 // Methods
 function openModal(modalTitle) {
-  title.value = modalTitle; // Ensure modalTitle is one of "Temperature", "Timer", or "Sensor Temperature"
+  title.value = modalTitle;
   isVisible.value = true;
   showAddTrigger.value = false;
+
+  document.addEventListener("keydown", handleKeyPress);
 }
 
 function closeModal() {
   isVisible.value = false;
   showAddTrigger.value = false;
+
+  document.removeEventListener("keydown", handleKeyPress);
 }
 
 function selectTrigger(trigger) {
@@ -99,37 +106,40 @@ function selectTrigger(trigger) {
 function handleTriggerCreated(newTrigger) {
   createdTriggers.value.push(newTrigger);
   showAddTrigger.value = false;
+  createdTriggers.value.sort((a, b) => (a.id > b.id ? -1 : 1));
 }
 
-// Fetch rules from the API on component mount
+// Close modal when pressing Escape key
+function handleKeyPress(event) {
+  if (event.key === "Escape") {
+    closeModal();
+  }
+}
+
 async function fetchRules() {
   try {
-    const response = await api.getData('rules'); // Fetch data from the API
-
-    // Debugging: Log the raw API response
+    const response = await api.getData('rules');
     console.log("API Response:", response);
 
-    // Group rules by service ID and map them to categories
     const groupedRules = response.map(rule => ({
       ...rule,
       category: serviceIdToCategory[rule.service.id] || "Unknown"
-    })).filter(rule => rule.category !== "Unknown"); // Exclude rules with unknown categories
+    })).filter(rule => rule.category !== "Unknown");
 
-    // Debugging: Log the grouped rules
-    console.log("Grouped Rules:", groupedRules);
+    groupedRules.sort((a, b) => (a.id > b.id ? -1 : 1));
 
-    createdTriggers.value = groupedRules; // Update the createdTriggers array
+    console.log("Grouped and Sorted Rules:", groupedRules);
+    createdTriggers.value = groupedRules;
   } catch (error) {
     console.error("Error fetching rules:", error);
   }
 }
 
-// Call fetchRules when the component is mounted
 onMounted(fetchRules);
 
-// Expose openModal to parent
 defineExpose({ openModal });
 </script>
+
 
 <style scoped>
 .modal-overlay {
@@ -184,6 +194,17 @@ defineExpose({ openModal });
   text-transform: capitalize;
 }
 
+/* Scrollable iframe-like container */
+.trigger-card-container {
+  max-height: 600px;
+  /* Adjust the height as needed */
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+/* Grid layout inside the scrollable container */
 .trigger-card-wrapper {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -194,20 +215,73 @@ defineExpose({ openModal });
 .trigger-card {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 1rem;
   margin-top: 1rem;
-  cursor: pointer;
   background: var(--color-background);
+  min-height: 120px;
+}
+
+.trigger-card-select {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+}
+
+.trigger-card a {
+  cursor: pointer;
   color: var(--ui-1);
   text-decoration: none;
+}
+
+.dlt-btn-dev {
+  display: flex;
+  justify-content: end;
+  position: relative;
+  padding: 0.7rem;
 }
 
 .trigger-card-add {
   background: transparent;
   border: 1px dashed var(--ui-1);
+}
+
+.no-rules-message {
+  margin-top: 1rem;
+}
+
+
+/* For WebKit browsers (Chrome, Safari) */
+.trigger-card-container::-webkit-scrollbar {
+  width: 8px;
+  /* Scrollbar width */
+  border-radius: 4px;
+}
+
+/* Scrollbar track */
+.trigger-card-container::-webkit-scrollbar-track {
+  background: var(--ui-1);
+  /* Light grey background */
+  border-radius: 4px;
+}
+
+/* Scrollbar handle */
+.trigger-card-container::-webkit-scrollbar-thumb {
+  background: var(--color-background);
+  /* Dark grey handle */
+  border-radius: 4px;
+}
+
+/* Scrollbar handle on hover */
+.trigger-card-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-background);
+  /* Darker grey on hover */
+}
+
+/* For Firefox */
+.trigger-card-container {
+  scrollbar-width: thin;
+  /* Makes scrollbar thinner */
+  scrollbar-color: var(--ui-1) var(--color-background);
+  /* Thumb color and track color */
 }
 </style>

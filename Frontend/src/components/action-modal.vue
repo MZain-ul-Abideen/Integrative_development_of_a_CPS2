@@ -10,32 +10,32 @@
       </div>
       <div class="modal-content-div">
         <span v-if="!showAddAction">{{ title }}</span>
-        <!-- Show AddAction component when showAddAction is true -->
         <AddAction v-if="showAddAction" :selectedService="title" @action-created="handleActionCreated" />
-        <!-- Show dynamic action options based on the selected service -->
         <div class="action-card-wrapper" v-if="!showAddAction">
-          <!-- Display default action options -->
-          <div
-            v-for="(action, index) in selectedActions"
-            :key="'action-' + index"
-            class="action-card"
-            @click="selectAction(action)"
-          >
-            <!-- <div class="dlt-list-item">
-              <img :src="del" />
-            </div> -->
-            <div class="action-card-header">
-              <span>{{ action.name }}</span>
-            </div>
-          </div>
-          <!-- No actions message -->
-          <div v-if="selectedActions.length === 0" class="no-actions-message">
-            No actions available for this service.
-          </div>
-          <!-- Add new action button -->
           <button class="action-card action-card-add" @click="showAddAction = true">
             <img :src="add" />
           </button>
+
+
+
+          <div v-for="(action, index) in selectedActions" :key="'action-' + index" class="action-card">
+            <div class="dlt-btn-dev">
+              <a href="">
+                <img :src="cross">
+              </a>
+            </div>
+            <div class="action-card-select">
+              <a @click="selectAction(action)">
+                <div class="action-card-header">
+                  <span>{{ action.name }}</span>
+                </div>
+              </a>
+            </div>
+
+          </div>
+          <div v-if="selectedActions.length === 0" class="no-actions-message">
+            No actions available for this service.
+          </div>
         </div>
       </div>
     </div>
@@ -43,47 +43,42 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
-import del from '@/assets/svgs/delete.svg';
 import AddAction from '@/components/sub-components/addAction-component.vue';
-import api from '@/api'; // Import your Axios utility
+import api from '@/api';
 
-// Service ID to Service Name Mapping
 const serviceIdToName = {
   4: "Building Automation",
   5: "Email",
   6: "LED"
 };
 
-// Refs
 const isVisible = ref(false);
 const title = ref('');
 const showAddAction = ref(false);
-const createdActions = ref([]); // Stores created actions
+const createdActions = ref([]);
 
-// Computed
 const selectedActions = computed(() => {
-  const serviceName = title.value;
-  return createdActions.value.filter(action => 
-    action.service.name === serviceName
-  );
+  return createdActions.value
+    .filter(action => action.service.name === title.value)
+    .sort((a, b) => b.id - a.id);
 });
 
-// Emits
 const emit = defineEmits(['action-selected']);
 
-// Methods
 function openModal(modalTitle) {
-  title.value = modalTitle; // Ensure modalTitle matches one of the service names
+  title.value = modalTitle;
   isVisible.value = true;
   showAddAction.value = false;
+  document.addEventListener('keydown', handleKeyPress); // Listen for 'Esc' key
 }
 
 function closeModal() {
   isVisible.value = false;
   showAddAction.value = false;
+  document.removeEventListener('keydown', handleKeyPress); // Remove listener when modal closes
 }
 
 function selectAction(action) {
@@ -94,37 +89,51 @@ function selectAction(action) {
 function handleActionCreated(newAction) {
   createdActions.value.push(newAction);
   showAddAction.value = false;
+  createdActions.value.sort((a, b) => b.id - a.id);
 }
 
-// Fetch actions from the API on component mount
 async function fetchActions() {
   try {
-    const response = await api.getData('actions'); // Fetch data from the API
-
-    // Debugging: Log the raw API response
-    console.log("API Response:", response);
-
-    // Group actions by service ID and map them to service names
+    const response = await api.getData('actions');
     const groupedActions = response.map(action => ({
       ...action,
       serviceName: serviceIdToName[action.service.id] || "Unknown"
-    })).filter(action => action.serviceName !== "Unknown"); // Exclude actions with unknown services
+    })).filter(action => action.serviceName !== "Unknown");
 
-    // Debugging: Log the grouped actions
-    console.log("Grouped Actions:", groupedActions);
-
-    createdActions.value = groupedActions; // Update the createdActions array
+    groupedActions.sort((a, b) => b.id - a.id);
+    createdActions.value = groupedActions;
   } catch (error) {
     console.error("Error fetching actions:", error);
   }
 }
 
-// Call fetchActions when the component is mounted
-onMounted(fetchActions);
+// Close modal when clicking outside of it
+function handleClickOutside(event) {
+  if (event.target.classList.contains('modal-overlay')) {
+    closeModal();
+  }
+}
 
-// Expose openModal to parent component
+// Close modal on Esc key press
+function handleKeyPress(event) {
+  if (event.key === "Escape") {
+    closeModal();
+  }
+}
+
+onMounted(() => {
+  fetchActions();
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('keydown', handleKeyPress);
+});
+
 defineExpose({ openModal });
 </script>
+
 
 <style scoped>
 .modal-overlay {
@@ -179,28 +188,93 @@ defineExpose({ openModal });
   text-transform: capitalize;
 }
 
-.action-card-wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+
+
+
+
+
+
+.trigger-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
   margin-top: 1rem;
+  background: var(--color-background);
+  min-height: 120px;
 }
 
 .action-card {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 1rem;
   margin-top: 1rem;
-  cursor: pointer;
   background: var(--color-background);
+  min-height: 120px;
+}
+
+.action-card a {
+  cursor: pointer;
+  color: var(--ui-1);
+  text-decoration: none;
+}
+
+.dlt-btn-dev {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  justify-content: end;
+  position: relative;
+  padding: 0.7rem;
 }
 
 .action-card-add {
   background: transparent;
   border: 1px dashed var(--ui-1);
+}
+
+.no-actions-message {
+  margin-top: 1rem;
+}
+
+.action-card-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+
+  max-height: 600px;
+  /* Adjust the height as needed */
+  overflow-y: auto;
+  /* Enable vertical scrolling when content exceeds max height */
+  padding-right: 5px;
+  /* Avoid scrollbar overlapping content */
+}
+
+/* Custom Scrollbar Styling */
+.action-card-wrapper::-webkit-scrollbar {
+  width: 8px;
+  /* Scrollbar width */
+  border-radius: 4px;
+}
+
+.action-card-wrapper::-webkit-scrollbar-track {
+  background: var(--ui-1);
+  /* Light grey background */
+  border-radius: 4px;
+}
+
+.action-card-wrapper::-webkit-scrollbar-thumb {
+  background: var(--color-background);
+  /* Dark grey handle */
+  border-radius: 4px;
+}
+
+.action-card-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--color-background);
+  /* Darker grey on hover */
+}
+
+/* Firefox Scrollbar */
+.action-card-wrapper {
+  scrollbar-width: thin;
+  /* Makes scrollbar thinner */
+  scrollbar-color: var(--ui-1) var(--color-background);
+  /* Thumb color and track color */
 }
 </style>
