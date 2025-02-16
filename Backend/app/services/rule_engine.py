@@ -1,4 +1,5 @@
 # /app/services/rule_engine.py
+
 from app.models import Rule, TriggerActionLink, db
 from .sensor_simulator import fetch_sensor_data
 from .api_client import fetch_weather_data
@@ -18,12 +19,14 @@ class RuleEngine:
     }
 
     TIMER_CONDITIONS = {
-        "every_minute": 60,  # Interval in seconds
+        "every_minute": 60,
         "every_hour": 3600,
         "every_2_hours": 7200,
         "every_3_hours": 10800,
         "every_day": 86400
     }
+
+    previously_triggered_rules = set()  # Track previously triggered rule IDs
 
     @staticmethod
     def parse_condition(condition):
@@ -31,9 +34,7 @@ class RuleEngine:
             parts = condition.split()
             if len(parts) != 3:
                 raise ValueError("Invalid condition format")
-            variable = parts[0]
-            op = parts[1]
-            value = parts[2]
+            variable, op, value = parts
 
             if variable == "timer":
                 if value not in RuleEngine.TIMER_CONDITIONS:
@@ -62,14 +63,14 @@ class RuleEngine:
 
         if variable == "timer":
             last_executed = data.get("last_executed", 0)
-            interval = RuleEngine.TIMER_CONDITIONS.get(value, None)
+            interval = RuleEngine.TIMER_CONDITIONS.get(value)
             if interval is None:
                 print(f"Invalid timer interval: {value}")
                 return False
 
             current_time = time.time()
             if current_time - last_executed >= interval:
-                data["last_executed"] = current_time  # Update the last execution time
+                data["last_executed"] = current_time  # Update last execution time
                 return True
             return False
 
@@ -79,7 +80,7 @@ class RuleEngine:
 
         try:
             if variable == "weather_condition":
-                return data[variable] == value  # Compare weather condition strings directly
+                return data[variable] == value  # Compare weather condition strings
 
             sensor_value = float(data[variable])
             return RuleEngine.OPERATORS[op](sensor_value, float(value))
@@ -114,25 +115,61 @@ class RuleEngine:
         }
 
         triggered_rules = RuleEngine.evaluate_rules(combined_data)
+        current_triggered_rule_ids = {rule.id for rule in triggered_rules}
 
+        # Find rules that were previously triggered but are no longer active
+        rules_to_turn_off = RuleEngine.previously_triggered_rules - current_triggered_rule_ids
+
+        for rule_id in rules_to_turn_off:
+            rule = Rule.query.get(rule_id)
+            if rule:
+                print(f"Rule '{rule.name}' is no longer met. Turning off LEDs...")
+
+                for link in rule.trigger_action_links:
+                    action = link.action
+                    if action.action_type == "Toggle LED":
+                        try:
+                            success = asyncio.run(notification_service.coap_update_leds(
+                                host="192.168.123.226",
+                                payload={"redLed": False, "yellowLed": False, "greenLed": False}
+                            ))
+
+                            if success:
+                                print(f"LEDs turned off for rule: {rule.name}")
+                            else:
+                                print(f"Failed to turn off LEDs for rule: {rule.name}")
+
+                        except Exception as e:
+                            print(f"Error turning off LEDs: {e}")
+
+        # Execute actions for newly triggered rules
         for rule in triggered_rules:
             print(f"Rule '{rule.name}' triggered. Executing linked actions...")
             for link in rule.trigger_action_links:
                 action = link.action
 
-                if action.action_type == "Building Automation":
-                    comfort_level = action.parameters.get("comfort_level")
-                    if comfort_level:
-                        success = notification_service.mqtt_publish(
-                            data={
-                                "topic": "emse/fayol/2ET/220/temperature/setpoint",
-                                "payload": str(comfort_level)
-                            }
-                        )
+                if action.action_type == "Toggle LED":
+                    red_led = action.parameters.get("redLed", False)
+                    yellow_led = action.parameters.get("yellowLed", False)
+                    green_led = action.parameters.get("greenLed", False)
+
+                    if not any([red_led, yellow_led, green_led]):
+                        print(f"No LED states specified for rule: {rule.name}")
+                        continue
+
+                    try:
+                        success = asyncio.run(notification_service.coap_update_leds(
+                            host="192.168.123.226",
+                            payload={"redLed": red_led, "yellowLed": yellow_led, "greenLed": green_led}
+                        ))
+
                         if success:
-                            print(f"MQTT message sent for rule: {rule.name}")
+                            print(f"LED states updated successfully for rule: {rule.name}")
                         else:
-                            print(f"Failed to send MQTT message for rule: {rule.name}")
+                            print(f"Failed to update LED states for rule: {rule.name}")
+
+                    except Exception as e:
+                        print(f"Error toggling LEDs: {e}")
 
                 elif action.action_type == "Send Email":
                     email_address = action.parameters.get("emailAddress")
@@ -153,33 +190,5 @@ class RuleEngine:
                     else:
                         print(f"Failed to send email for rule: {rule.name}")
 
-                elif action.action_type == "Toggle LED":  # NEW: Handle LED actions
-                    red_led = action.parameters.get("redLed", False)
-                    yellow_led = action.parameters.get("yellowLed", False)
-                    green_led = action.parameters.get("greenLed", False)
-
-                    if not any([red_led, yellow_led, green_led]):
-                        print(f"No LED states specified for rule: {rule.name}")
-                        continue
-
-                    try:
-                        # Wrap the async call with asyncio.run()
-                        success = asyncio.run(notification_service.coap_update_leds(
-                            host="192.168.123.226",  # Replace with your ESP32's IP address
-                            payload={
-                                "redLed": red_led,
-                                "yellowLed": yellow_led,
-                                "greenLed": green_led
-                            }
-                        ))
-
-                        if success:
-                            print(f"LED states updated successfully for rule: {rule.name}")
-                        else:
-                            print(f"Failed to update LED states for rule: {rule.name}")
-
-                    except Exception as e:
-                        print(f"Error toggling LEDs: {e}")
-
-                else:
-                    print(f"Unsupported action type: {action.action_type}")
+        # Update previously triggered rules
+        RuleEngine.previously_triggered_rules = current_triggered_rule_ids
