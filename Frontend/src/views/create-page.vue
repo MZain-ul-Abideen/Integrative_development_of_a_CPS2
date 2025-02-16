@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref } from 'vue';
 import ModalTrigger from '@/components/trigger-modal.vue';
 import ModalAction from '@/components/action-modal.vue';
+import axios from 'axios'; // Import Axios for making HTTP requests
 
 import add from '@/assets/svgs/add.svg';
 import edit from '@/assets/svgs/edit.svg';
@@ -15,8 +16,8 @@ import email from '@/assets/pictures/email.png';
 import timer from '@/assets/pictures/time.png';
 
 // Refs
-const showCards1 = ref(false);
-const showCards2 = ref(false);
+const showCards1 = ref(false); // Controls visibility of "If This" cards
+const showCards2 = ref(false); // Controls visibility of "Then That" cards
 const modalTriggerRef = ref(null);
 const modalActionRef = ref(null);
 
@@ -26,171 +27,247 @@ const selectedTrigger = ref('');
 const selectedActionService = ref('');
 const selectedAction = ref('');
 
-
-// Define the functions directly in the setup block
-function handleMouseMove(event) {
-  const card = event.currentTarget;
-  const hoverEffect = card.querySelector(".hover-effect");
-
-  // Get card's bounding box
-  const rect = card.getBoundingClientRect();
-
-  // Calculate mouse position within the card
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  // Position the shadow
-  hoverEffect.style.top = `${y - 100}px`; // Offset to center the shadow
-  hoverEffect.style.left = `${x - 100}px`;
-  hoverEffect.style.opacity = 1; // Show the shadow
-}
-
-function handleMouseLeave(event) {
-  const hoverEffect = event.currentTarget.querySelector(".hover-effect");
-  hoverEffect.style.opacity = 0; // Hide the shadow on mouse leave
-}
-
+// Hidden fields for rule_id, rule_name, action_id, and action_name
+const ruleId = ref(null);
+const ruleName = ref('');
+const actionId = ref(null);
+const actionName = ref('');
 
 // Toggle card visibility
 function toggleIfCards() {
-    showCards1.value = !showCards1.value;
+  console.log("Toggling If This cards:", showCards1.value);
+  showCards1.value = !showCards1.value;
 }
 
 function toggleThenCards() {
-    showCards2.value = !showCards2.value;
+  console.log("Toggling Then That cards:", showCards2.value);
+  showCards2.value = !showCards2.value;
 }
 
 // Open modals
 function openTriggerModal(service) {
-    modalTriggerRef.value?.openModal(service);
+  modalTriggerRef.value?.openModal(service);
 }
 
 function openActionModal(service) {
-    modalActionRef.value?.openModal(service);
+  modalActionRef.value?.openModal(service);
 }
 
 // Handle selections
 function handleTriggerSelection({ service, trigger }) {
-    selectedService.value = service;
-    selectedTrigger.value = trigger;
+  selectedService.value = service;
+  selectedTrigger.value = trigger;
+  fetchRuleId(service, trigger); // Fetch rule ID and name
 }
 
 function handleActionSelection({ service, action }) {
-    selectedActionService.value = service;
-    selectedAction.value = action;
+  selectedActionService.value = service;
+  selectedAction.value = action;
+  fetchActionId(service, action); // Fetch action ID and name
+}
+
+// API utility function to fetch rule ID
+const fetchRuleId = async (service, trigger) => {
+  try {
+    console.log("Fetching rule ID for service:", service, "and trigger:", trigger);
+    const response = await axios.get(`http://127.0.0.1:5000/rules`, {
+      params: {
+        service: service,
+        name: trigger
+      }
+    });
+    if (response.data.length > 0) {
+      ruleId.value = response.data[0].id;
+      ruleName.value = response.data[0].name;
+      console.log("Fetched Rule ID:", ruleId.value);
+    } else {
+      console.error("No rule found for the given service and trigger.");
+      alert("No rule found for the selected trigger. Please check your selection.");
+    }
+  } catch (error) {
+    console.error("Error fetching rule ID:", error);
+    alert("Failed to fetch rule ID. Please try again later.");
+  }
+};
+
+// API utility function to fetch action ID
+const fetchActionId = async (service, action) => {
+  try {
+    console.log("Fetching action ID for service:", service, "and action:", action);
+    const response = await axios.get(`http://127.0.0.1:5000/actions`, {
+      params: {
+        service: service,
+        name: action
+      }
+    });
+    if (response.data.length > 0) {
+      actionId.value = response.data[0].id;
+      actionName.value = response.data[0].name;
+      console.log("Fetched Action ID:", actionId.value);
+    } else {
+      console.error("No action found for the given service and action.");
+      alert("No action found for the selected action. Please check your selection.");
+    }
+  } catch (error) {
+    console.error("Error fetching action ID:", error);
+    alert("Failed to fetch action ID. Please try again later.");
+  }
+};
+
+// Submit the form
+async function createRule() {
+  // Debugging: Log selected values
+  console.log("Selected Service:", selectedService.value);
+  console.log("Selected Trigger:", selectedTrigger.value);
+  console.log("Selected Action Service:", selectedActionService.value);
+  console.log("Selected Action:", selectedAction.value);
+
+  // Validate ruleId and actionId
+  if (!ruleId.value || !actionId.value) {
+    console.error("ruleId or actionId is missing:", { ruleId: ruleId.value, actionId: actionId.value });
+    alert("Please select both a trigger and an action.");
+    return;
+  }
+
+  try {
+    const payload = {
+      rule_id: ruleId.value,
+      action_id: actionId.value
+    };
+
+    // Debugging: Log payload
+    console.log("Payload:", payload);
+
+    // Send the POST request to the API endpoint
+    const response = await axios.post('http://127.0.0.1:5000/link-rule-action', payload);
+
+    // Handle successful response
+    console.log("Server Response:", response.data);
+    alert("Rule and Action linked successfully!");
+  } catch (error) {
+    // Handle errors
+    if (error.response) {
+      alert(`Error linking rule and action: ${error.response.data.message || error.response.statusText}`);
+      console.error("Server Response:", error.response.data);
+    } else {
+      alert("An unexpected error occurred. Please try again later.");
+    }
+    console.error("Error linking rule and action:", error);
+  }
 }
 </script>
 
 <template>
-    <div class="main-wrapper">
-        <div
-        class="main-div-card"
-        @mousemove="handleMouseMove"
-        @mouseleave="handleMouseLeave"
-      >
-        <div class="affect-global-blue1"></div>
-        <div class="affect-global-blue2"></div>
-        <div class="affect-global-blue3"></div>
-        <div class="affect-global-yellow1"></div>
-        <div class="affect-global-yellow2"></div>
-        <div class="affect-global-lightblue1"></div>
-        <div class="hover-effect"></div>
-            <div class="content">
-                <h5 class="mb-4">Create</h5>
-                <div class="ifthan-wrapper">
-                    <!-- If This Section -->
-                    <div class="ifthan-div">
-                        <div class="ifthan-header">
-                            <div class="ifthan-header-card">
-                                <span>If This</span>
-                                <div class="d-flex">
-                                    <div class="px-2">
-                                        <a href="#" @click.prevent="toggleIfCards">
-                                            <img :src="add">
-                                        </a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="edit"></a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="del"></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr v-if="selectedService && selectedTrigger">
-                            <div v-if="selectedService && selectedTrigger" class="selected-servce">
-                                <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
-                                <span><span class="fw-bold">Rule: </span>{{ selectedTrigger }}</span>
-                            </div>
-                        </div>
-                        <div class="ifthan-cards-div" v-if="showCards1">
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Temperature')">
-                                <img :src="weatherimage" class="weather-img">
-                                <span>Weather</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Timer')">
-                                <img :src="timer" class="weather-img">
-                                <span>Timer</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
-                                <img :src="IoT" class="weather-img">
-                                <span>IoT Device</span>
-                            </a>
-                        </div>
-                    </div>
+  <div class="main-wrapper">
+    <div
+      class="main-div-card"
+      @mousemove="handleMouseMove"
+      @mouseleave="handleMouseLeave"
+    >
+      <!-- Global effects -->
+      <div class="affect-global-blue1"></div>
+      <div class="affect-global-blue2"></div>
+      <div class="affect-global-blue3"></div>
+      <div class="affect-global-yellow1"></div>
+      <div class="affect-global-yellow2"></div>
+      <div class="affect-global-lightblue1"></div>
+      <div class="hover-effect"></div>
 
-                    <div class="mx-5 my-4">
-                        <img :src="arrow" alt="">
-                    </div>
-
-                    <!-- Then That Section -->
-                    <div class="ifthan-div">
-                        <div class="ifthan-header">
-                            <div class="ifthan-header-card">
-                                <span>Then That</span>
-                                <div class="d-flex">
-                                    <div class="px-2">
-                                        <a href="#" @click.prevent="toggleThenCards">
-                                            <img :src="add">
-                                        </a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="edit"></a>
-                                    </div>
-                                    <div class="px-2">
-                                        <a href="#"><img :src="del"></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr v-if="selectedActionService && selectedAction">
-                            <div v-if="selectedActionService && selectedAction" class="selected-servce">
-                                <span><span class="fw-bold">Service: </span>{{ selectedActionService }}</span>
-                                <span><span class="fw-bold">Action: </span>{{ selectedAction }}</span>
-                            </div>
-                        </div>
-                        <div class="ifthan-cards-div" v-if="showCards2">
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('Building Automation')">
-                                <img :src="buildingtemp" class="weather-img">
-                                <span>Building Automation</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('Email')">
-                                <img :src="email" class="weather-img">
-                                <span>Email</span>
-                            </a>
-                            <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
-                                <img :src="IoT" class="weather-img">
-                                <span>IoT Device</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <form action="" class="content">
+        <div class="d-flex align-items-center justify-content-between mb-5">
+          <h5 class="mb-4">Create</h5>
+          <button type="button" class="button-2" @click="createRule">Create Rule</button>
         </div>
+
+        <div class="ifthan-wrapper">
+          <!-- If This Section -->
+          <div class="ifthan-div">
+            <div class="ifthan-header">
+              <div class="ifthan-header-card">
+                <span>If This</span>
+                <div class="d-flex">
+                  <div class="px-2">
+                    <a href="#" @click.prevent="toggleIfCards">
+                      <img :src="add" alt="Add" />
+                    </a>
+                  </div>
+                  <div class="px-2">
+                    <a href="#"><img :src="del" alt="Delete" /></a>
+                  </div>
+                </div>
+              </div>
+              <hr v-if="selectedService && selectedTrigger">
+              <div v-if="selectedService && selectedTrigger" class="selected-servce">
+                <span><span class="fw-bold">Service: </span>{{ selectedService }}</span>
+                <span><span class="fw-bold">Trigger: </span>{{ selectedTrigger }}</span>
+              </div>
+            </div>
+            <div class="ifthan-cards-div" v-if="showCards1">
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Temperature')">
+                <img :src="weatherimage" class="weather-img">
+                <span>Weather</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Timer')">
+                <img :src="timer" class="weather-img">
+                <span>Timer</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openTriggerModal('Sensor Temperature')">
+                <img :src="IoT" class="weather-img">
+                <span>IoT Device</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Arrow separator -->
+          <div class="mx-5 my-4">
+            <img :src="arrow" alt="">
+          </div>
+
+          <!-- Then That Section -->
+          <div class="ifthan-div">
+            <div class="ifthan-header">
+              <div class="ifthan-header-card">
+                <span>Then That</span>
+                <div class="d-flex">
+                  <div class="px-2">
+                    <a href="#" @click.prevent="toggleThenCards">
+                      <img :src="add" alt="Add" />
+                    </a>
+                  </div>
+                  <div class="px-2">
+                    <a href="#"><img :src="del" alt="Delete" /></a>
+                  </div>
+                </div>
+              </div>
+              <hr v-if="selectedActionService && selectedAction">
+              <div v-if="selectedActionService && selectedAction" class="selected-servce">
+                <span><span class="fw-bold">Service: </span>{{ selectedActionService }}</span>
+                <span><span class="fw-bold">Action: </span>{{ selectedAction }}</span>
+              </div>
+            </div>
+            <div class="ifthan-cards-div" v-if="showCards2">
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('Building Automation')">
+                <img :src="buildingtemp" class="weather-img">
+                <span>Building Automation</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('Email')">
+                <img :src="email" class="weather-img">
+                <span>Email</span>
+              </a>
+              <a href="#" class="ifthan-card" @click.prevent="openActionModal('LED')">
+                <img :src="IoT" class="weather-img">
+                <span>IoT Device</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
     <!-- Modals -->
     <ModalTrigger ref="modalTriggerRef" @trigger-selected="handleTriggerSelection" />
     <ModalAction ref="modalActionRef" @action-selected="handleActionSelection" />
+  </div>
 </template>
 
 <style scoped>
