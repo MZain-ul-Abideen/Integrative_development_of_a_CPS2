@@ -24,8 +24,13 @@ class NotificationService:
     @staticmethod
     def send_notification(data, notification_type='print', recipient=None):
         try:
-            email_body = data.get("emailBody")
-            subject = data.get("subject")
+            # Ensure required keys exist
+            if not isinstance(data, dict) or "emailBody" not in data or "subject" not in data:
+                print("Error: Missing required email fields (subject or emailBody).")
+                return False
+
+            email_body = data["emailBody"]
+            subject = data["subject"]
 
             if notification_type == 'print':
                 print(f"Sending notification: {email_body}")
@@ -51,10 +56,6 @@ class NotificationService:
             else:
                 print(f"Unsupported notification type: {notification_type}")
                 return False
-
-        except KeyError as e:
-            print(f"Missing key in data: {e}")
-            return False
 
         except Exception as e:
             print(f"Error sending notification: {e}")
