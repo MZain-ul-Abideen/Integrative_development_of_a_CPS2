@@ -10,29 +10,38 @@
       </div>
       <div class="modal-content-div">
         <span v-if="!showAddAction">{{ title }}</span>
-        <AddAction v-if="showAddAction" :selectedService="title" @action-created="handleActionCreated" />
+        <AddAction 
+          v-if="showAddAction" 
+          :selectedService="title" 
+          @action-created="handleActionCreated" 
+        />
         <div class="action-card-wrapper" v-if="!showAddAction">
           <button class="action-card action-card-add" @click="showAddAction = true">
             <img :src="add" />
           </button>
 
-
-
-          <div v-for="(action, index) in selectedActions" :key="'action-' + index" class="action-card">
+          <!-- Display filtered actions -->
+          <div 
+            v-for="(action, index) in selectedActions" 
+            :key="'action-' + index" 
+            class="action-card"
+          >
             <div class="dlt-btn-dev">
-              <a href="">
-                <img :src="cross">
+              <!-- Delete button -->
+              <a href="#" @click.prevent="deleteAction(action.id)">
+                <img :src="cross" />
               </a>
             </div>
             <div class="action-card-select">
+              <!-- Select action -->
               <a @click="selectAction(action)">
                 <div class="action-card-header">
                   <span>{{ action.name }}</span>
                 </div>
               </a>
             </div>
-
           </div>
+          <!-- No actions message -->
           <div v-if="selectedActions.length === 0" class="no-actions-message">
             No actions available for this service.
           </div>
@@ -49,25 +58,30 @@ import add from '@/assets/svgs/add.svg';
 import AddAction from '@/components/sub-components/addAction-component.vue';
 import api from '@/api';
 
+// Service ID to Name Mapping
 const serviceIdToName = {
   4: "Building Automation",
   5: "Email",
   6: "LED"
 };
 
+// Refs
 const isVisible = ref(false);
 const title = ref('');
 const showAddAction = ref(false);
 const createdActions = ref([]);
 
+// Computed
 const selectedActions = computed(() => {
   return createdActions.value
     .filter(action => action.service.name === title.value)
-    .sort((a, b) => b.id - a.id);
+    .sort((a, b) => b.id - a.id); // Sort by ID in descending order (newest first)
 });
 
+// Emits
 const emit = defineEmits(['action-selected']);
 
+// Methods
 function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
@@ -87,24 +101,57 @@ function selectAction(action) {
 }
 
 function handleActionCreated(newAction) {
-  createdActions.value.push(newAction);
-  showAddAction.value = false;
-  createdActions.value.sort((a, b) => b.id - a.id);
+  createdActions.value.push(newAction); // Add the new action to the list
+  showAddAction.value = false; // Switch back to "Choose an Action" state
+  createdActions.value.sort((a, b) => b.id - a.id); // Re-sort the actions
 }
 
+// Fetch actions from the API on component mount
 async function fetchActions() {
   try {
-    const response = await api.getData('actions');
+    const response = await api.getData('actions'); // Fetch actions from the backend
+    console.log("API Response:", response);
+
     const groupedActions = response.map(action => ({
       ...action,
       serviceName: serviceIdToName[action.service.id] || "Unknown"
-    })).filter(action => action.serviceName !== "Unknown");
+    })).filter(action => action.serviceName !== "Unknown"); // Exclude actions with unknown services
 
-    groupedActions.sort((a, b) => b.id - a.id);
-    createdActions.value = groupedActions;
+    groupedActions.sort((a, b) => b.id - a.id); // Sort by ID in descending order
+    console.log("Grouped and Sorted Actions:", groupedActions);
+
+    createdActions.value = groupedActions; // Update the local state with fetched actions
   } catch (error) {
     console.error("Error fetching actions:", error);
   }
+}
+
+// Delete an action by ID
+async function deleteAction(actionId) {
+  try {
+    // Confirm deletion with the user
+    if (!confirm(`Are you sure you want to delete the action with ID ${actionId}?`)) {
+      return;
+    }
+
+    // Debugging: Log the action ID being deleted
+    console.log("Deleting Action with ID:", actionId);
+
+    // Send DELETE request to the backend
+    const response = await api.deleteData(`actions/${actionId}`);
+    console.log("Server Response:", response);
+
+    // Remove the action from the local state
+    createdActions.value = createdActions.value.filter(action => action.id !== actionId);
+
+    // Notify via console instead of alert
+    console.log("Action deleted successfully.");
+
+    // Optionally, refresh the page to reflect changes
+  } catch (error) {
+    console.error("Error deleting action:", error);
+  }
+  location.reload(); // Reload the page after deletion
 }
 
 // Close modal when clicking outside of it
@@ -121,16 +168,19 @@ function handleKeyPress(event) {
   }
 }
 
+// Call fetchActions when the component is mounted
 onMounted(() => {
   fetchActions();
   document.addEventListener('click', handleClickOutside);
 });
 
+// Clean up event listeners when the component is unmounted
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('keydown', handleKeyPress);
 });
 
+// Expose openModal to parent component
 defineExpose({ openModal });
 </script>
 
@@ -188,12 +238,6 @@ defineExpose({ openModal });
   text-transform: capitalize;
 }
 
-
-
-
-
-
-
 .trigger-card {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -230,6 +274,9 @@ defineExpose({ openModal });
 
 .no-actions-message {
   margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .action-card-wrapper {
