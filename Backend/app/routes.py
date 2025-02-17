@@ -384,3 +384,47 @@ def delete_rule(rule_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@main_routes.route('/actions/<int:action_id>', methods=['DELETE'])
+def delete_action(action_id):
+    """
+    Delete an action and its associated links.
+    """
+    action = Action.query.get(action_id)
+    if not action:
+        return jsonify({"error": "Action not found"}), 404
+    
+    try:
+        # Remove all links associated with the action
+        TriggerActionLink.query.filter_by(action_id=action_id).delete()
+        
+        # Delete the action itself
+        db.session.delete(action)
+        db.session.commit()
+        
+        # Get the notification service from current app
+        notification_service = current_app.notification_service
+        
+        # Optionally, send a CoAP request to reset LED states
+        # Only do this if the action was controlling LEDs
+        if action.type in ['LED_CONTROL', 'LIGHT_CONTROL']:  # Adjust these types based on your action types
+            asyncio.run(notification_service.coap_update_leds(
+                host="192.168.123.226",  # Replace with your ESP32's IP address
+                payload={
+                    "redLed": False,
+                    "yellowLed": False,
+                    "greenLed": False
+                }
+            ))
+        
+        return jsonify({
+            "message": "Action deleted successfully",
+            "action": {
+                "id": action.id,
+                "name": action.name
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
