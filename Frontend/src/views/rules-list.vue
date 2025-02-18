@@ -17,7 +17,6 @@ function handleMouseMove(event) {
   hoverEffect.style.left = `${x - 100}px`;
   hoverEffect.style.opacity = 1;
 }
-
 function handleMouseLeave(event) {
   const hoverEffect = event.currentTarget.querySelector(".hover-effect");
   hoverEffect.style.opacity = 0;
@@ -59,22 +58,20 @@ onBeforeUnmount(() => {
 async function fetchLinkedRulesActions() {
   try {
     const response = await axios.get("http://127.0.0.1:5000/linked-rules-actions");
-
     // Debugging: Log the raw API response
     console.log("API Response:", response.data);
-
     // Map the API response to match the table structure
     notifications.value = response.data.map(link => ({
       ID: link.rule_id,
       Trigger: `${link.rule_service.name} - ${link.rule_name} (${link.rule_condition})`,
-      Action: `${link.action_service.name} - ${link.action_name}`
+      Action: `${link.action_service.name} - ${link.action_name}`,
+      rule_id: link.rule_id, // Add rule_id for deletion
+      action_id: link.action_id // Add action_id for deletion
     }));
-
     // Debugging: Log the mapped notifications
     console.log("Mapped Notifications:", notifications.value);
   } catch (error) {
     console.error("Error fetching linked rules and actions:", error);
-
     // Handle errors
     if (error.response) {
       console.error("Server Response:", error.response.data);
@@ -91,9 +88,35 @@ function dataTableMenuViewAction(id) {
   // Add your view logic here
 }
 
-function dataTableMenuDeleteAction(id) {
-  console.log(`Delete action triggered for ID: ${id}`);
-  // Add your delete logic here
+// Delete action for unlinking rule and action
+async function dataTableMenuDeleteAction(notification) {
+  try {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to unlink Rule ID: ${notification.rule_id} and Action ID: ${notification.action_id}?`
+    );
+    if (!confirmDelete) return;
+
+    // Send DELETE request to unlink rule and action
+    const response = await axios.delete(
+      `http://127.0.0.1:5000/unlink-rule-action/${notification.rule_id}/${notification.action_id}`
+    );
+
+    // Check if the unlink was successful
+    if (response.status === 200) {
+      alert("Rule and action unlinked successfully.");
+      // Refresh the notifications list after deletion
+      fetchLinkedRulesActions();
+    } else {
+      alert("Failed to unlink rule and action.");
+    }
+  } catch (error) {
+    console.error("Error unlinking rule and action:", error);
+    if (error.response) {
+      alert(`Error unlinking rule and action: ${error.response.data.error || error.response.statusText}`);
+    } else {
+      alert("An unexpected error occurred while unlinking rule and action.");
+    }
+  }
 }
 
 // Call fetchLinkedRulesActions when the component is mounted
@@ -147,7 +170,12 @@ onMounted(fetchLinkedRulesActions);
                     v-if="openDropdowns.has(index)"
                     class="data-table-menu-dropdown-menu"
                   >
-                    <a href="#" @click.prevent="dataTableMenuDeleteAction(notification.ID)">Delete</a>
+                    <a
+                      href="#"
+                      @click.prevent="dataTableMenuDeleteAction(notification)"
+                    >
+                      Delete
+                    </a>
                   </div>
                 </div>
               </td>
