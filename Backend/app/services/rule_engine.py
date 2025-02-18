@@ -1,5 +1,4 @@
 # /app/services/rule_engine.py
-
 from app.models import Rule, TriggerActionLink, db
 from .sensor_simulator import fetch_sensor_data
 from .api_client import fetch_weather_data
@@ -35,20 +34,15 @@ class RuleEngine:
             if len(parts) != 3:
                 raise ValueError("Invalid condition format")
             variable, op, value = parts
-
             if variable == "timer":
                 if value not in RuleEngine.TIMER_CONDITIONS:
                     raise ValueError(f"Unsupported timer interval: {value}")
                 return variable, op, value
-
             if op not in RuleEngine.OPERATORS:
                 raise ValueError(f"Unsupported operator: {op}")
-
             if variable in ["inside_temperature", "outside_temperature"]:
                 value = float(value)
-
             return variable, op, value
-
         except Exception as e:
             print(f"Error parsing condition: {e}")
             return None
@@ -58,33 +52,26 @@ class RuleEngine:
         parsed = RuleEngine.parse_condition(condition)
         if not parsed:
             return False
-
         variable, op, value = parsed
-
         if variable == "timer":
             last_executed = data.get("last_executed", 0)
             interval = RuleEngine.TIMER_CONDITIONS.get(value)
             if interval is None:
                 print(f"Invalid timer interval: {value}")
                 return False
-
             current_time = time.time()
             if current_time - last_executed >= interval:
                 data["last_executed"] = current_time  # Update last execution time
                 return True
             return False
-
         if variable not in data:
             print(f"Variable '{variable}' not found in sensor data.")
             return False
-
         try:
             if variable == "weather_condition":
                 return data[variable] == value  # Compare weather condition strings
-
             sensor_value = float(data[variable])
             return RuleEngine.OPERATORS[op](sensor_value, float(value))
-
         except Exception as e:
             print(f"Error evaluating condition: {e}")
             return False
@@ -93,14 +80,12 @@ class RuleEngine:
     def evaluate_rules(data):
         active_rules = Rule.query.all()
         triggered_rules = []
-
         for rule in active_rules:
             try:
                 if RuleEngine.evaluate_condition(rule.condition, data):
                     triggered_rules.append(rule)
             except Exception as e:
                 print(f"Error evaluating rule {rule.id}: {e}")
-
         return triggered_rules
 
     @staticmethod
@@ -111,20 +96,23 @@ class RuleEngine:
         combined_data = {
             **sensor_data,
             **weather_data,
+            "inside_temperature": sensor_data.get("inside_temperature", "N/A"),
+            "weather_condition": weather_data.get("weather_condition", "N/A"),
+            "outside_temperature": weather_data.get("outside_temperature", "N/A"),
             "last_executed": sensor_data.get("last_executed", 0)  # Default to 0 if not set
         }
 
         triggered_rules = RuleEngine.evaluate_rules(combined_data)
+
+        # Extract currently triggered rule IDs
         current_triggered_rule_ids = {rule.id for rule in triggered_rules}
 
         # Find rules that were previously triggered but are no longer active
         rules_to_turn_off = RuleEngine.previously_triggered_rules - current_triggered_rule_ids
-
         for rule_id in rules_to_turn_off:
             rule = Rule.query.get(rule_id)
             if rule:
                 print(f"Rule '{rule.name}' is no longer met. Turning off LEDs...")
-
                 for link in rule.trigger_action_links:
                     action = link.action
                     if action.action_type == "Toggle LED":
@@ -133,18 +121,17 @@ class RuleEngine:
                                 host="192.168.123.226",
                                 payload={"redLed": False, "yellowLed": False, "greenLed": False}
                             ))
-
                             if success:
                                 print(f"LEDs turned off for rule: {rule.name}")
                             else:
                                 print(f"Failed to turn off LEDs for rule: {rule.name}")
-
                         except Exception as e:
                             print(f"Error turning off LEDs: {e}")
 
         # Execute actions for newly triggered rules
         for rule in triggered_rules:
             print(f"Rule '{rule.name}' triggered. Executing linked actions...")
+
             for link in rule.trigger_action_links:
                 action = link.action
 
@@ -160,7 +147,11 @@ class RuleEngine:
                     try:
                         success = asyncio.run(notification_service.coap_update_leds(
                             host="192.168.123.226",
-                            payload={"redLed": red_led, "yellowLed": yellow_led, "greenLed": green_led}
+                            payload={
+                                "redLed": red_led,
+                                "yellowLed": yellow_led,
+                                "greenLed": green_led
+                            }
                         ))
 
                         if success:
@@ -174,21 +165,36 @@ class RuleEngine:
                 elif action.action_type == "Send Email":
                     email_address = action.parameters.get("emailAddress")
                     subject = action.parameters.get("subject")
-                    email_body = action.parameters.get("emailBody").format(**combined_data)
+                    email_body = action.parameters.get("emailBody")
 
-                    success = notification_service.send_notification(
-                        data={
-                            "emailBody": email_body,
-                            "subject": subject
-                        },
-                        notification_type='email',
-                        recipient=email_address
-                    )
+                    if not all([email_address, subject, email_body]):
+                        print(f"Missing required parameters for email action in rule: {rule.name}")
+                        continue
 
-                    if success:
-                        print(f"Email sent successfully for rule: {rule.name}")
-                    else:
-                        print(f"Failed to send email for rule: {rule.name}")
+                    try:
+                        # Replace placeholders dynamically using combined_data
+                        email_body = email_body.format(**combined_data)
+                        subject = subject.format(**combined_data)
+
+                        print(f"DEBUG: Action parameters after replacement - "
+                              f"Subject: {subject}, Email Body: {email_body}")  # Debug log
+
+                        success = notification_service.send_notification(
+                            data={
+                                "emailBody": email_body,
+                                "subject": subject
+                            },
+                            notification_type='email',
+                            recipient=email_address
+                        )
+
+                        if success:
+                            print(f"Email sent successfully for rule: {rule.name}")
+                        else:
+                            print(f"Failed to send email for rule: {rule.name}")
+
+                    except KeyError as e:
+                        print(f"Missing key in email body template: {e}")
 
         # Update previously triggered rules
         RuleEngine.previously_triggered_rules = current_triggered_rule_ids

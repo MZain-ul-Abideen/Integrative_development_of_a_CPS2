@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from .extensions import db
 from .routes import main_routes
 from .services.timer_service import start_timer_service
+from .services.notification_service import NotificationService  # Import the NotificationService
 import os
 
 load_dotenv()
@@ -32,6 +33,9 @@ def create_app():
     # Register blueprints
     app.register_blueprint(main_routes)
     
+    # Initialize NotificationService with the app
+    app.notification_service = NotificationService(app)  # Store it in the app instance
+
     # Start the timer service
     start_timer_service(app)
     
