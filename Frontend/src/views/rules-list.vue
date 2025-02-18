@@ -1,10 +1,20 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import axios from "axios"; // Import Axios for making HTTP requests
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import axios from "axios";
 
 // Reactive variables
 const notifications = ref([]); // Stores the linked rules and actions
 const openDropdowns = ref(new Set()); // Tracks open dropdowns
+const currentPage = ref(1); // Tracks the current page
+const itemsPerPage = 8; // Number of rows per page
+
+// Pagination logic
+const totalPages = computed(() => Math.ceil(notifications.value.length / itemsPerPage));
+const paginatedNotifications = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return notifications.value.slice(start, end);
+});
 
 // Event listeners for hover effects
 function handleMouseMove(event) {
@@ -58,34 +68,23 @@ onBeforeUnmount(() => {
 async function fetchLinkedRulesActions() {
   try {
     const response = await axios.get("http://127.0.0.1:5000/linked-rules-actions");
-    // Debugging: Log the raw API response
-    console.log("API Response:", response.data);
-    // Map the API response to match the table structure
     notifications.value = response.data.map(link => ({
-      ID: link.rule_id,
+      ID: link.id,
       Trigger: `${link.rule_service.name} - ${link.rule_name} (${link.rule_condition})`,
       Action: `${link.action_service.name} - ${link.action_name}`,
-      rule_id: link.rule_id, // Add rule_id for deletion
-      action_id: link.action_id // Add action_id for deletion
+      rule_id: link.rule_id,
+      action_id: link.action_id
     }));
-    // Debugging: Log the mapped notifications
-    console.log("Mapped Notifications:", notifications.value);
+    currentPage.value = 1; // Reset to first page after data fetch
   } catch (error) {
     console.error("Error fetching linked rules and actions:", error);
-    // Handle errors
-    if (error.response) {
-      console.error("Server Response:", error.response.data);
-      alert(`Error fetching linked rules and actions: ${error.response.data.error || error.response.statusText}`);
-    } else {
-      alert("An unexpected error occurred while fetching linked rules and actions.");
-    }
+    alert("An unexpected error occurred while fetching linked rules and actions.");
   }
 }
 
 // Actions for dropdown menu
 function dataTableMenuViewAction(id) {
   console.log(`View action triggered for ID: ${id}`);
-  // Add your view logic here
 }
 
 // Delete action for unlinking rule and action
@@ -95,27 +94,25 @@ async function dataTableMenuDeleteAction(notification) {
       `Are you sure you want to unlink Rule ID: ${notification.rule_id} and Action ID: ${notification.action_id}?`
     );
     if (!confirmDelete) return;
-
-    // Send DELETE request to unlink rule and action
     const response = await axios.delete(
       `http://127.0.0.1:5000/unlink-rule-action/${notification.rule_id}/${notification.action_id}`
     );
-
-    // Check if the unlink was successful
     if (response.status === 200) {
       alert("Rule and action unlinked successfully.");
-      // Refresh the notifications list after deletion
-      fetchLinkedRulesActions();
+      fetchLinkedRulesActions(); // Refresh the notifications list after deletion
     } else {
       alert("Failed to unlink rule and action.");
     }
   } catch (error) {
     console.error("Error unlinking rule and action:", error);
-    if (error.response) {
-      alert(`Error unlinking rule and action: ${error.response.data.error || error.response.statusText}`);
-    } else {
-      alert("An unexpected error occurred while unlinking rule and action.");
-    }
+    alert("An unexpected error occurred while unlinking rule and action.");
+  }
+}
+
+// Handle page change
+function handlePageChange(pageNumber) {
+  if (pageNumber >= 1 && pageNumber <= totalPages.value) {
+    currentPage.value = pageNumber;
   }
 }
 
@@ -139,7 +136,6 @@ onMounted(fetchLinkedRulesActions);
       <div class="affect-global-yellow2"></div>
       <div class="affect-global-lightblue1"></div>
       <div class="hover-effect"></div>
-
       <!-- Content -->
       <div class="content">
         <h5 class="mb-4">Rules List</h5>
@@ -153,7 +149,7 @@ onMounted(fetchLinkedRulesActions);
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(notification, index) in notifications" :key="index">
+            <tr v-for="(notification, index) in paginatedNotifications" :key="index">
               <td>{{ notification.ID }}</td>
               <td>{{ notification.Trigger }}</td>
               <td>{{ notification.Action }}</td>
@@ -182,22 +178,38 @@ onMounted(fetchLinkedRulesActions);
             </tr>
           </tbody>
         </table>
-
         <!-- Pagination -->
         <div class="my-4 d-flex justify-content-end">
           <nav aria-label="Page navigation example" class="pagination-div">
             <ul class="pagination">
-              <li class="page-item">
-                <a class="page-link" href="#" aria-label="Previous">
+              <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                <a
+                  class="page-link"
+                  href="#"
+                  aria-label="Previous"
+                  @click.prevent="handlePageChange(currentPage - 1)"
+                >
                   <span aria-hidden="true">&laquo;</span>
                   <span class="sr-only">Previous</span>
                 </a>
               </li>
-              <li class="page-item"><a class="page-link" href="#">1</a></li>
-              <li class="page-item"><a class="page-link" href="#">2</a></li>
-              <li class="page-item"><a class="page-link" href="#">3</a></li>
-              <li class="page-item">
-                <a class="page-link" href="#" aria-label="Next">
+              <li
+                v-for="page in totalPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: currentPage === page }"
+              >
+                <a class="page-link" href="#" @click.prevent="handlePageChange(page)">
+                  {{ page }}
+                </a>
+              </li>
+              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                <a
+                  class="page-link"
+                  href="#"
+                  aria-label="Next"
+                  @click.prevent="handlePageChange(currentPage + 1)"
+                >
                   <span aria-hidden="true">&raquo;</span>
                   <span class="sr-only">Next</span>
                 </a>
@@ -209,7 +221,6 @@ onMounted(fetchLinkedRulesActions);
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .content {
