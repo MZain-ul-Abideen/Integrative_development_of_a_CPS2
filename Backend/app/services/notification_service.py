@@ -2,65 +2,80 @@
 from flask import current_app
 from flask_mail import Mail, Message
 import os
+import requests
 import paho.mqtt.client as mqtt
 import asyncio
 import json
 from aiocoap import *
 
 class NotificationService:
-    def __init__(self, app=None):
-        if app:
-            self.mail = Mail(app)
-            self.setup_email_config(app)
+    def __init__(self):
+        # Hardcoded SendGrid API key and default sender email
+        self.sendgrid_api_key = "REDACTED_SENDGRID_KEY"  # Replace with your actual API key
+        self.default_sender = "mohammadamin.norouzi.2023@gmail.com"  # Replace with your default sender email
 
-    def setup_email_config(self, app):
-        app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-        app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-        app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
-        app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-        app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-        app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-
-    @staticmethod
-    def send_notification(data, notification_type='print', recipient=None):
+    def send_notification(self, data, recipient=None):
         try:
-            # Ensure required keys exist
-            if not isinstance(data, dict) or "emailBody" not in data or "subject" not in data:
-                print("Error: Missing required email fields (subject or emailBody).")
+            if not self.sendgrid_api_key:
+                print("Error: SendGrid API key is not configured.")
                 return False
 
-            email_body = data["emailBody"]
-            subject = data["subject"]
+            if not recipient:
+                print("Error: No recipient specified for email.")
+                return False
 
-            if notification_type == 'print':
-                print(f"Sending notification: {email_body}")
+            email_body = data.get("emailBody")
+            subject = data.get("subject")  # Keep 'subject' as it was before
+
+            if not all([email_body, subject]):
+                print("Error: Missing email body or subject.")
+                return False
+
+            print(f"Attempting to send email to {recipient}: {email_body}")  # Debug log
+
+            # Construct the SendGrid API payload
+            payload = {
+                "personalizations": [
+                    {
+                        "to": [{"email": recipient}],
+                        "subject": subject
+                    }
+                ],
+                "from": {"email": self.default_sender},  # Use hardcoded default sender
+                "content": [
+                    {
+                        "type": "text/plain",
+                        "value": email_body
+                    }
+                ]
+            }
+
+            headers = {
+                "Authorization": f"Bearer {self.sendgrid_api_key}",
+                "Content-Type": "application/json"
+            }
+
+            # Send the email via SendGrid API
+            response = requests.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                json=payload,
+                headers=headers
+            )
+
+            if response.status_code == 202:
+                print(f"Email sent successfully to {recipient}: {email_body}")
                 return True
-
-            elif notification_type == 'email':
-                if not recipient:
-                    print("Error: Email recipient is required for email notifications.")
-                    return False
-
-                mail = Mail(current_app)
-
-                msg = Message(
-                    subject=subject,
-                    recipients=[recipient],
-                    body=email_body.format(**data)  # Replace placeholders dynamically
-                )
-
-                mail.send(msg)
-                print(f"Email sent to {recipient}: {email_body}")
-                return True
-
             else:
-                print(f"Unsupported notification type: {notification_type}")
+                print(f"Failed to send email. Status code: {response.status_code}, Response: {response.text}")
                 return False
 
-        except Exception as e:
-            print(f"Error sending notification: {e}")
+        except KeyError as e:
+            print(f"Missing key in email data: {e}")
             return False
-
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            return False
+        
     @staticmethod
     def mqtt_publish(data):
         try:

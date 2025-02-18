@@ -5,7 +5,7 @@ from .api_client import fetch_weather_data
 from .notification_service import notification_service
 import operator
 import time
-import asyncio  # Import asyncio for running async functions
+import asyncio
 
 class RuleEngine:
     OPERATORS = {
@@ -18,7 +18,7 @@ class RuleEngine:
     }
 
     TIMER_CONDITIONS = {
-        "every_minute": 60,
+        "every_minute": 60,  # Interval in seconds
         "every_hour": 3600,
         "every_2_hours": 7200,
         "every_3_hours": 10800,
@@ -92,7 +92,6 @@ class RuleEngine:
     def check_and_execute_rules():
         sensor_data = fetch_sensor_data() or {}
         weather_data = fetch_weather_data() or {}
-
         combined_data = {
             **sensor_data,
             **weather_data,
@@ -131,19 +130,15 @@ class RuleEngine:
         # Execute actions for newly triggered rules
         for rule in triggered_rules:
             print(f"Rule '{rule.name}' triggered. Executing linked actions...")
-
             for link in rule.trigger_action_links:
                 action = link.action
-
                 if action.action_type == "Toggle LED":
                     red_led = action.parameters.get("redLed", False)
                     yellow_led = action.parameters.get("yellowLed", False)
                     green_led = action.parameters.get("greenLed", False)
-
                     if not any([red_led, yellow_led, green_led]):
                         print(f"No LED states specified for rule: {rule.name}")
                         continue
-
                     try:
                         success = asyncio.run(notification_service.coap_update_leds(
                             host="192.168.123.226",
@@ -153,46 +148,36 @@ class RuleEngine:
                                 "greenLed": green_led
                             }
                         ))
-
                         if success:
                             print(f"LED states updated successfully for rule: {rule.name}")
                         else:
                             print(f"Failed to update LED states for rule: {rule.name}")
-
                     except Exception as e:
                         print(f"Error toggling LEDs: {e}")
-
                 elif action.action_type == "Send Email":
                     email_address = action.parameters.get("emailAddress")
                     subject = action.parameters.get("subject")
                     email_body = action.parameters.get("emailBody")
-
                     if not all([email_address, subject, email_body]):
                         print(f"Missing required parameters for email action in rule: {rule.name}")
                         continue
-
                     try:
                         # Replace placeholders dynamically using combined_data
                         email_body = email_body.format(**combined_data)
                         subject = subject.format(**combined_data)
-
                         print(f"DEBUG: Action parameters after replacement - "
                               f"Subject: {subject}, Email Body: {email_body}")  # Debug log
-
                         success = notification_service.send_notification(
                             data={
                                 "emailBody": email_body,
                                 "subject": subject
                             },
-                            notification_type='email',
-                            recipient=email_address
+                            recipient=email_address.strip()
                         )
-
                         if success:
                             print(f"Email sent successfully for rule: {rule.name}")
                         else:
                             print(f"Failed to send email for rule: {rule.name}")
-
                     except KeyError as e:
                         print(f"Missing key in email body template: {e}")
 
