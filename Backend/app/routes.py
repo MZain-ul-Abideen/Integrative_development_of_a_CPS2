@@ -278,27 +278,26 @@ def send_test_notification():
     email_body = data.get("emailBody")
     subject = data.get("subject")
     recipient = data.get("recipient")
-    notification_type = data.get("notification_type", "email")
 
     try:
-        # Replace placeholders in the email body with actual values
+        # Replace placeholders dynamically
         inside_temperature = data.get("inside_temperature", "N/A")
         outside_forecast = data.get("outside_forecast", "N/A")
         email_body = email_body.format(
             inside_temperature=inside_temperature,
             outside_forecast=outside_forecast
         )
+        subject = subject.format(
+            inside_temperature=inside_temperature,
+            outside_forecast=outside_forecast
+        )
 
-        # Call the instance method on notification_service
-        success = notification_service.send_notification(
+        success = current_app.notification_service.send_notification(
             data={
                 "emailBody": email_body,
-                "subject": subject,
-                "inside_temperature": inside_temperature,
-                "outside_forecast": outside_forecast
+                "subject": subject  # Use 'subject' as before
             },
-            notification_type=notification_type,
-            recipient=recipient
+            recipient=recipient.strip()
         )
 
         if success:
@@ -428,3 +427,24 @@ def delete_action(action_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+    
+@main_routes.route('/linked-rules-actions/<int:link_id>', methods=['DELETE'])
+def delete_linked_rule_action(link_id):
+    """
+    Delete a linked rule-action by its ID.
+    """
+    try:
+        link = TriggerActionLink.query.get(link_id)
+        
+        if not link:
+            return jsonify({"error": "Linked rule-action not found"}), 404
+
+        db.session.delete(link)
+        db.session.commit()
+
+        return jsonify({"message": "Linked rule-action deleted successfully"}), 200
+
+    except Exception as e:
+        print(f"Error deleting linked rule-action: {e}")
+        db.session.rollback()
+        return jsonify({"error": "Failed to delete linked rule-action"}), 500
