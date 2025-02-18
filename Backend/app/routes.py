@@ -428,23 +428,26 @@ def delete_action(action_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
     
-@main_routes.route('/linked-rules-actions/<int:link_id>', methods=['DELETE'])
-def delete_linked_rule_action(link_id):
+@main_routes.route('/unlink-rule-action/<int:rule_id>/<int:action_id>', methods=['DELETE'])
+def unlink_rule_action(rule_id, action_id):
     """
-    Delete a linked rule-action by its ID.
+    Delete a link between a rule and an action.
     """
-    try:
-        link = TriggerActionLink.query.get(link_id)
-        
-        if not link:
-            return jsonify({"error": "Linked rule-action not found"}), 404
+    link = TriggerActionLink.query.filter_by(rule_id=rule_id, action_id=action_id).first()
 
+    if not link:
+        return jsonify({"error": "Link not found"}), 404
+
+    try:
         db.session.delete(link)
         db.session.commit()
-
-        return jsonify({"message": "Linked rule-action deleted successfully"}), 200
-
+        return jsonify({
+            "message": "Rule and action unlinked successfully",
+            "unlinked": {
+                "rule_id": rule_id,
+                "action_id": action_id
+            }
+        }), 200
     except Exception as e:
-        print(f"Error deleting linked rule-action: {e}")
         db.session.rollback()
-        return jsonify({"error": "Failed to delete linked rule-action"}), 500
+        return jsonify({"error": str(e)}), 500
