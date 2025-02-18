@@ -319,6 +319,7 @@ def list_linked_rules_actions():
     try:
         links = TriggerActionLink.query.all()
         link_list = [{
+            "id": link.id,  # Unique ID for the link
             "rule_id": link.rule.id,
             "rule_name": link.rule.name,
             "rule_condition": link.rule.condition,
