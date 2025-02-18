@@ -69,7 +69,7 @@ async function fetchLinkedRulesActions() {
   try {
     const response = await axios.get("http://127.0.0.1:5000/linked-rules-actions");
     notifications.value = response.data.map(link => ({
-      ID: link.rule_id,
+      ID: link.id,
       Trigger: `${link.rule_service.name} - ${link.rule_name} (${link.rule_condition})`,
       Action: `${link.action_service.name} - ${link.action_name}`,
       rule_id: link.rule_id,
