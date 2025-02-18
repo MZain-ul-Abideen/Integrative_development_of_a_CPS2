@@ -12,7 +12,7 @@ class NotificationService:
     def __init__(self):
         # Hardcoded SendGrid API key and default sender email
         self.sendgrid_api_key = "REDACTED_SENDGRID_KEY"  # Replace with your actual API key
-        self.default_sender = "mohammadamin.norouzi.2023@gmail.com"  # Replace with your default sender email
+        self.default_sender = "amin.norozi77@gmail.com"  # Replace with your default sender email
 
     def send_notification(self, data, recipient=None):
         try:
