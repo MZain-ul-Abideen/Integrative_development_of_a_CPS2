@@ -10,10 +10,12 @@
       </div>
       <div class="modal-content-div">
         <span v-if="!showAddTrigger">{{ title }}</span>
-
         <!-- AddTrigger component -->
-        <AddTrigger v-if="showAddTrigger" :selectedService="title" @trigger-created="handleTriggerCreated" />
-
+        <AddTrigger 
+          v-if="showAddTrigger" 
+          :selectedService="title" 
+          @trigger-created="handleTriggerCreated" 
+        />
         <!-- Trigger cards inside a scrollable iframe-like div -->
         <div class="trigger-card-container" v-if="!showAddTrigger">
           <div class="trigger-card-wrapper">
@@ -21,24 +23,27 @@
             <button class="trigger-card trigger-card-add" @click="showAddTrigger = true">
               <img :src="add" />
             </button>
-
-            <div class="trigger-card" v-for="(rule, index) in selectedTriggers" :key="'rule-' + index">
+            <!-- Display filtered rules -->
+            <div 
+              class="trigger-card" 
+              v-for="(rule, index) in selectedTriggers" 
+              :key="'rule-' + index"
+            >
               <div class="dlt-btn-dev">
-                <a href="">
-                  <img :src="cross">
+                <!-- Delete button -->
+                <a href="#" @click.prevent="deleteRule(rule.id)">
+                  <img :src="cross" />
                 </a>
               </div>
               <div class="trigger-card-select">
-                <!-- Display filtered rules -->
+                <!-- Select rule -->
                 <a href="#" @click.prevent="selectTrigger(rule)">
                   <div class="trigger-card-header">
                     <span>{{ rule.name }}</span>
                   </div>
                 </a>
               </div>
-
             </div>
-
             <!-- No rules message -->
             <div v-if="selectedTriggers.length === 0" class="no-rules-message">
               No rules available for this category.
@@ -50,13 +55,14 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import cross from '@/assets/svgs/cross.svg';
 import add from '@/assets/svgs/add.svg';
 import del from '@/assets/svgs/delete.svg';
 import AddTrigger from '@/components/sub-components/addTrigger-component.vue';
-import api from '@/api';
+import api from '@/api'; // Import your Axios utility
 
 // Service ID to Category Mapping
 const serviceIdToCategory = {
@@ -76,7 +82,7 @@ const selectedTriggers = computed(() => {
   const category = title.value;
   return createdTriggers.value
     .filter(rule => rule.category === category)
-    .sort((a, b) => (a.id > b.id ? -1 : 1));
+    .sort((a, b) => (a.id > b.id ? -1 : 1)); // Sort by ID in descending order
 });
 
 // Emits
@@ -87,14 +93,12 @@ function openModal(modalTitle) {
   title.value = modalTitle;
   isVisible.value = true;
   showAddTrigger.value = false;
-
   document.addEventListener("keydown", handleKeyPress);
 }
 
 function closeModal() {
   isVisible.value = false;
   showAddTrigger.value = false;
-
   document.removeEventListener("keydown", handleKeyPress);
 }
 
@@ -104,9 +108,9 @@ function selectTrigger(trigger) {
 }
 
 function handleTriggerCreated(newTrigger) {
-  createdTriggers.value.push(newTrigger);
-  showAddTrigger.value = false;
-  createdTriggers.value.sort((a, b) => (a.id > b.id ? -1 : 1));
+  createdTriggers.value.push(newTrigger); // Add the new trigger to the list
+  showAddTrigger.value = false; // Switch back to "Choose a Trigger" state
+  createdTriggers.value.sort((a, b) => (a.id > b.id ? -1 : 1)); // Re-sort the triggers
 }
 
 // Close modal when pressing Escape key
@@ -116,27 +120,58 @@ function handleKeyPress(event) {
   }
 }
 
+// Fetch rules from the API on component mount
 async function fetchRules() {
   try {
-    const response = await api.getData('rules');
+    const response = await api.getData('rules'); // Fetch rules from the backend
     console.log("API Response:", response);
 
     const groupedRules = response.map(rule => ({
       ...rule,
       category: serviceIdToCategory[rule.service.id] || "Unknown"
-    })).filter(rule => rule.category !== "Unknown");
+    })).filter(rule => rule.category !== "Unknown"); // Exclude rules with unknown categories
 
-    groupedRules.sort((a, b) => (a.id > b.id ? -1 : 1));
-
+    groupedRules.sort((a, b) => (a.id > b.id ? -1 : 1)); // Sort by ID in descending order
     console.log("Grouped and Sorted Rules:", groupedRules);
-    createdTriggers.value = groupedRules;
+
+    createdTriggers.value = groupedRules; // Update the local state with fetched rules
   } catch (error) {
     console.error("Error fetching rules:", error);
   }
 }
 
+// Delete a rule by ID
+async function deleteRule(ruleId) {
+  try {
+    // Confirm deletion with the user
+    if (!confirm(`Are you sure you want to delete the rule with ID ${ruleId}?`)) {
+      return;
+    }
+
+    // Debugging: Log the rule ID being deleted
+    console.log("Deleting Rule with ID:", ruleId);
+
+    // Send DELETE request to the backend
+    const response = await api.deleteData(`rules/${ruleId}`);
+    console.log("Server Response:", response);
+
+    // Remove the rule from the local state
+    createdTriggers.value = createdTriggers.value.filter(rule => rule.id !== ruleId);
+
+    // Notify via console instead of alert
+    console.log("Rule deleted successfully.");
+
+    // Refresh the page after deletion
+  } catch (error) {
+    console.error("Error deleting rule:", error);
+  }
+  location.reload(); // Reload the page to reflect changes
+}
+
+// Call fetchRules when the component is mounted
 onMounted(fetchRules);
 
+// Expose openModal to parent component
 defineExpose({ openModal });
 </script>
 
@@ -247,6 +282,9 @@ defineExpose({ openModal });
 
 .no-rules-message {
   margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 

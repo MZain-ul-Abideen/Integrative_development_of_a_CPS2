@@ -1,98 +1,117 @@
 <template>
-    <form @submit.prevent="createAction" class="mt-1 temperature-section">
-      <!-- Email Action Section -->
-      <div>
-        <div class="form-group">
-          <label for="ActionName">Action Name</label>
-          <input
-            type="text"
-            v-model="actionName"
-            id="ActionName"
-            class="text-feild"
-            placeholder="Enter Action Name"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label for="EmailAddress">Email Address</label>
-          <input
-            type="email"
-            v-model="parameters.emailAddress"
-            id="EmailAddress"
-            class="text-feild"
-            placeholder="Enter Email Address"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label for="Subject">Add Subject</label>
-          <input
-            type="text"
-            v-model="parameters.subject"
-            id="Subject"
-            class="text-feild"
-            placeholder="Enter Email Subject"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label for="EmailContent">Email</label>
-          <textarea
-            name="Email-Content"
-            id="EmailContent"
-            v-model="parameters.emailBody"
-            class="discription-feild"
-            placeholder="Write Email Here"
-            required
-          ></textarea>
-          <div class="Dorpdown-div">
-            <!-- From Uiverse.io by Galahhad -->
-            <div class="theme-popup">
-              <input type="radio" name="theme" id="default" checked="" />
-              <input type="radio" name="theme" id="light" />
-              <input type="radio" name="theme" id="dark" />
-              <input type="checkbox" id="checkbox" />
-              <label for="checkbox" class="theme-popup__button">
-                Add Ingredients
-              </label>
-              <div class="theme-popup__list-container">
-                <ul class="theme-popup__list">
-                  <li>
-                    <label for="temperature">
-                      <span>Temperature</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label for="weather">
-                      <span>Weather</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
+  <form @submit.prevent="createAction" class="mt-1 temperature-section">
+    <!-- Email Action Section -->
+    <div>
+      <div class="form-group">
+        <label for="ActionName">Action Name</label>
+        <input
+          type="text"
+          v-model="actionName"
+          id="ActionName"
+          class="text-feild"
+          placeholder="Enter Action Name"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="EmailAddress">Email Address</label>
+        <input
+          type="email"
+          v-model="parameters.emailAddress"
+          id="EmailAddress"
+          class="text-feild"
+          placeholder="Enter Email Address"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="Subject">Add Subject</label>
+        <input
+          type="text"
+          v-model="parameters.subject"
+          id="Subject"
+          class="text-feild"
+          placeholder="Enter Email Subject"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="EmailContent">Email</label>
+        <textarea
+          name="Email-Content"
+          id="EmailContent"
+          v-model="parameters.emailBody"
+          class="discription-feild"
+          placeholder="Write Email Here"
+          required
+        ></textarea>
+        <div class="Dorpdown-div">
+          <!-- Dropdown for adding ingredients -->
+          <div class="theme-popup">
+            <input type="checkbox" id="checkbox" />
+            <label for="checkbox" class="theme-popup__button">
+              Add Ingredients
+            </label>
+            <div class="theme-popup__list-container">
+              <ul class="theme-popup__list">
+                <li>
+                  <button
+                    type="button"
+                    @click="addIngredient(' {inside_temperature} ')"
+                    class="ingredient-button"
+                  >
+                    Inside Temp
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    @click="addIngredient(' {outside_temperature} ')"
+                    class="ingredient-button"
+                  >
+                    Outside Temp
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    @click="addIngredient(' {weather_condition} ')"
+                    class="ingredient-button"
+                  >
+                    Condition
+                  </button>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-        <button type="submit" class="button-2 mt-4">Create</button>
       </div>
-    </form>
-  </template>
+      <button type="submit" class="button-2 mt-4">Create</button>
+    </div>
+  </form>
+</template>
 
 <script setup>
-import { ref } from 'vue';
-import axios from 'axios'; // Import Axios for making HTTP requests
+import { ref } from "vue";
+import axios from "axios"; // Import Axios for making HTTP requests
 
 // Reactive variables
-const actionName = ref(''); // Action name
+const actionName = ref(""); // Action name
 const parameters = ref({
-  emailAddress: '', // Email address
-  subject: '', // Email subject
-  emailBody: '' // Email body
+  emailAddress: "", // Email address
+  subject: "", // Email subject
+  emailBody: "", // Email body
 });
-const errorMessage = ref(''); // Error message for validation
+const errorMessage = ref(""); // Error message for validation
+
+// Function to add selected ingredient to the email body
+const addIngredient = (ingredient) => {
+  parameters.value.emailBody += ` ${ingredient}`;
+};
 
 // Function to validate input and create a new action via POST request
 const createAction = async () => {
-  errorMessage.value = ''; // Reset error message
+  errorMessage.value = ""; // Reset error message
 
   // Validation
   if (!actionName.value.trim()) {
@@ -121,15 +140,15 @@ const createAction = async () => {
       parameters: {
         emailAddress: parameters.value.emailAddress, // Email address
         subject: parameters.value.subject, // Email subject
-        emailBody: parameters.value.emailBody // Email body
-      }
+        emailBody: parameters.value.emailBody, // Email body
+      },
     };
 
     // Log the payload for debugging
     console.log("Payload:", payload);
 
     // Send the POST request to the API endpoint
-    const response = await axios.post('http://127.0.0.1:5000/actions', payload);
+    const response = await axios.post("http://127.0.0.1:5000/actions", payload);
 
     // Handle successful response
     console.log("Server Response:", response.data);
@@ -138,7 +157,9 @@ const createAction = async () => {
   } catch (error) {
     // Handle errors
     if (error.response) {
-      errorMessage.value = `Error creating action: ${error.response.data.message || error.response.statusText}`;
+      errorMessage.value = `Error creating action: ${
+        error.response.data.message || error.response.statusText
+      }`;
       console.error("Server Response:", error.response.data); // Log the full response
     } else {
       errorMessage.value = "An unexpected error occurred. Please try again later.";
@@ -149,10 +170,10 @@ const createAction = async () => {
 
 // Function to reset the form
 const resetForm = () => {
-  actionName.value = '';
-  parameters.value.emailAddress = '';
-  parameters.value.subject = '';
-  parameters.value.emailBody = '';
+  actionName.value = "";
+  parameters.value.emailAddress = "";
+  parameters.value.subject = "";
+  parameters.value.emailBody = "";
 };
 </script>
 
@@ -281,10 +302,6 @@ const resetForm = () => {
     white-space: nowrap;
 }
 
-.theme-popup__list label span {
-    font-size: var(--list_btn_font_size);
-}
-
 /* actions */
 
 #checkbox:checked~.theme-popup__button {
@@ -314,4 +331,22 @@ const resetForm = () => {
 #dark:checked~label svg.moon {
     display: block;
 }
+
+
+/* Optional styling for buttons */
+.ingredient-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  color: var(--ui-1);
+  font-weight: 600;
+  padding: 5px 0px;
+}
+
+.ingredient-button:hover {
+  background-color: #818181;
+  transition: 0.5s;
+}
+
 </style>
