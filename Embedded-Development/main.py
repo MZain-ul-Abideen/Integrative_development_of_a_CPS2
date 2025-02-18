@@ -40,8 +40,8 @@ class LEDManager:
 
 # Network Configuration
 class NetworkConfig:
-    WIFI_SSID = 'Galaxy A06 0a23'  # Replace with your WiFi SSID
-    WIFI_PASSWORD = '12345678'  # Replace with your WiFi password
+    WIFI_SSID = 'POCO X6 5G'  # Replace with your WiFi SSID
+    WIFI_PASSWORD = 'amin1884'  # Replace with your WiFi password
 
 # Sensor Management
 class SensorManager:

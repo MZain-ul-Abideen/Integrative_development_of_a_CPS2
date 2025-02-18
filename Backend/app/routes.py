@@ -278,27 +278,26 @@ def send_test_notification():
     email_body = data.get("emailBody")
     subject = data.get("subject")
     recipient = data.get("recipient")
-    notification_type = data.get("notification_type", "email")
 
     try:
-        # Replace placeholders in the email body with actual values
+        # Replace placeholders dynamically
         inside_temperature = data.get("inside_temperature", "N/A")
         outside_forecast = data.get("outside_forecast", "N/A")
         email_body = email_body.format(
             inside_temperature=inside_temperature,
             outside_forecast=outside_forecast
         )
+        subject = subject.format(
+            inside_temperature=inside_temperature,
+            outside_forecast=outside_forecast
+        )
 
-        # Call the instance method on notification_service
-        success = notification_service.send_notification(
+        success = current_app.notification_service.send_notification(
             data={
                 "emailBody": email_body,
-                "subject": subject,
-                "inside_temperature": inside_temperature,
-                "outside_forecast": outside_forecast
+                "subject": subject  # Use 'subject' as before
             },
-            notification_type=notification_type,
-            recipient=recipient
+            recipient=recipient.strip()
         )
 
         if success:
