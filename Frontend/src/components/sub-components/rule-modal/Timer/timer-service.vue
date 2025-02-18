@@ -74,6 +74,7 @@ const createRule = async () => {
     console.log("Server Response:", response.data);
     alert("Rule created successfully!");
     resetForm(); // Reset the form after successful creation
+    location.reload();
   } catch (error) {
     // Handle errors
     if (error.response) {

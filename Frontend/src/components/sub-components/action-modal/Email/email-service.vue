@@ -154,6 +154,7 @@ const createAction = async () => {
     console.log("Server Response:", response.data);
     alert("Action created successfully!");
     resetForm(); // Reset the form after successful creation
+    location.reload();
   } catch (error) {
     // Handle errors
     if (error.response) {
@@ -175,6 +176,17 @@ const resetForm = () => {
   parameters.value.subject = "";
   parameters.value.emailBody = "";
 };
+
+document.addEventListener("click", (event) => {
+  const dropdown = document.querySelector(".theme-popup");
+  const checkbox = document.getElementById("checkbox");
+
+  if (dropdown && checkbox && !dropdown.contains(event.target)) {
+    checkbox.checked = false; // Close dropdown
+  }
+});
+
+
 </script>
 
 <style scoped>

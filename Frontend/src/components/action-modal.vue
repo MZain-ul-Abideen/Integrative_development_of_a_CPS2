@@ -35,7 +35,7 @@
             <div class="action-card-select">
               <!-- Select action -->
               <a @click="selectAction(action)">
-                <div class="action-card-header">
+                <div class="action-card-header pb-4">
                   <span>{{ action.name }}</span>
                 </div>
               </a>

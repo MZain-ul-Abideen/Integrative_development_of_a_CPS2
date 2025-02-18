@@ -38,7 +38,7 @@
               <div class="trigger-card-select">
                 <!-- Select rule -->
                 <a href="#" @click.prevent="selectTrigger(rule)">
-                  <div class="trigger-card-header">
+                  <div class="trigger-card-header pb-4 px-2">
                     <span>{{ rule.name }}</span>
                   </div>
                 </a>
