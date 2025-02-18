@@ -1,4 +1,5 @@
-Integrated Development of CPS2
+## Integrated Development of CPS2
+
 ## Table of Contents:
 - Introduction
 - Features
