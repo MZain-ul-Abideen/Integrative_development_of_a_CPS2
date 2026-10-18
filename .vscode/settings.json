@@ -6,8 +6,8 @@
     },
     "circuitpython.board.version": null,
     "python.analysis.extraPaths": [
-        "/home/amin/.vscode/extensions/wmerkens.vscode-circuitpython-v2-0.3.3/boards/0x239A/0x80EC",
-        "/home/amin/.vscode/extensions/wmerkens.vscode-circuitpython-v2-0.3.3/stubs",
+        "/home/zain/.vscode/extensions/wmerkens.vscode-circuitpython-v2-cursor-ai-0.3.3/boards/0x239A/0x80EC",
+        "/home/zain/.vscode/extensions/wmerkens.vscode-circuitpython-v2-cursor-ai-0.3.3/stubs",
         "/home/amin/.config/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20250214/adafruit-circuitpython-bundle-py-20250214/lib"
     ],
     "circuitpython.board.vid": "0x239A",
