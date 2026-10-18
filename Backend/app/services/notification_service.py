@@ -10,9 +10,9 @@ from aiocoap import *
 
 class NotificationService:
     def __init__(self):
-        # Hardcoded SendGrid API key and default sender email
-        self.sendgrid_api_key = "REDACTED_SENDGRID_KEY"  # Replace with your actual API key
-        self.default_sender = "amin.norozi77@gmail.com"  # Replace with your default sender email
+        # Use environment variables for configuration
+        self.sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+        self.default_sender = os.getenv("MAIL_DEFAULT_SENDER")
 
     def send_notification(self, data, recipient=None):
         try:
