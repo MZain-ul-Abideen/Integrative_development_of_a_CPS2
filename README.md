@@ -209,23 +209,6 @@ payload = '{"redLed": true}'
 asyncio.run(update_led("192.168.205.226", payload))
 ```
 
-## Contributing
-
-- Fork the repository.
-- Create a new branch: git checkout -b feature/new-feature.
-- Commit changes: git commit -m "Add new feature".
-- Push to the branch: git push origin feature/new-feature.
-- Submit a pull request.
-
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Contact
-
-For questions or support, contact:  ``` mohammadamin.norouzi.2023@gmail.com ```
-
-
-
-
-
